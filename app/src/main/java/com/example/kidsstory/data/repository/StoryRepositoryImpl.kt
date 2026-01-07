@@ -80,8 +80,8 @@ class StoryRepositoryImpl @Inject constructor(
 
     override suspend fun initializePresetStories() {
         // 檢查是否已經初始化過
-        val existingStories = storyDao.getRecentlyPlayed(1)
-        if (existingStories.isNotEmpty()) {
+        val presetCount = storyDao.getPresetStoryCount()
+        if (presetCount > 0) {
             return // 已經有資料，不需要重新初始化
         }
 

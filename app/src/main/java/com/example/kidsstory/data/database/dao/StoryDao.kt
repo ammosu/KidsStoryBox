@@ -25,6 +25,9 @@ interface StoryDao {
     @Query("SELECT * FROM stories WHERE isPreset = 1 ORDER BY createdAt ASC")
     fun getPresetStories(): Flow<List<StoryEntity>>
 
+    @Query("SELECT COUNT(*) FROM stories WHERE isPreset = 1")
+    suspend fun getPresetStoryCount(): Int
+
     @Query("SELECT * FROM stories WHERE isPreset = 0 ORDER BY createdAt DESC")
     fun getAIGeneratedStories(): Flow<List<StoryEntity>>
 
