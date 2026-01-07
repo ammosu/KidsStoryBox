@@ -1,10 +1,13 @@
 package com.example.kidsstory.presentation.screens.library
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -15,12 +18,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.kidsstory.domain.model.Language
 import com.example.kidsstory.domain.model.Story
 import com.example.kidsstory.domain.model.StoryCategory
+import kotlin.math.max
 
 /**
  * 故事列表畫面
@@ -38,7 +44,9 @@ fun StoryLibraryScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("故事寶庫") }
+                title = {
+                    Text(if (uiState.language == Language.ENGLISH) "Story Library" else "故事寶庫")
+                }
             )
         },
         floatingActionButton = {
@@ -47,7 +55,7 @@ fun StoryLibraryScreen(
             ) {
                 Icon(Icons.Default.Add, contentDescription = null)
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("創造新故事")
+                Text(if (uiState.language == Language.ENGLISH) "Create story" else "創造新故事")
             }
         }
     ) { padding ->
@@ -56,11 +64,28 @@ fun StoryLibraryScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
+            LibraryHeader(
+                storyCount = uiState.stories.size,
+                language = uiState.language
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Text(
+                text = if (uiState.language == Language.ENGLISH) "Language" else "語言",
+                style = MaterialTheme.typography.titleSmall,
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
             LanguageFilterRow(
                 selectedLanguage = uiState.language,
                 onLanguageSelect = { viewModel.selectLanguage(it) }
             )
 
+            Text(
+                text = if (uiState.language == Language.ENGLISH) "Categories" else "分類",
+                style = MaterialTheme.typography.titleSmall,
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
             // 分類篩選
             CategoryFilterRow(
                 language = uiState.language,
@@ -85,7 +110,12 @@ fun StoryLibraryScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = uiState.error ?: "發生錯誤",
+                            text = uiState.error
+                                ?: if (uiState.language == Language.ENGLISH) {
+                                    "Something went wrong"
+                                } else {
+                                    "發生錯誤"
+                                },
                             color = MaterialTheme.colorScheme.error
                         )
                     }
@@ -96,7 +126,13 @@ fun StoryLibraryScreen(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text("還沒有故事")
+                        Text(
+                            if (uiState.language == Language.ENGLISH) {
+                                "No stories yet"
+                            } else {
+                                "還沒有故事"
+                            }
+                        )
                     }
                 }
 
@@ -127,22 +163,20 @@ fun CategoryFilterRow(
     selectedCategory: StoryCategory?,
     onCategorySelect: (StoryCategory?) -> Unit
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    LazyRow(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
     ) {
-        // 全部按鈕
-        val allLabel = if (language == Language.ENGLISH) "All" else "全部"
-        FilterChip(
-            selected = selectedCategory == null,
-            onClick = { onCategorySelect(null) },
-            label = { Text(allLabel) }
-        )
-
-        // 各分類按鈕
-        StoryCategory.values().forEach { category ->
+        item {
+            val allLabel = if (language == Language.ENGLISH) "All" else "全部"
+            FilterChip(
+                selected = selectedCategory == null,
+                onClick = { onCategorySelect(null) },
+                label = { Text(allLabel) }
+            )
+        }
+        items(StoryCategory.values()) { category ->
             val label = if (language == Language.ENGLISH) {
                 category.displayNameEn
             } else {
@@ -182,11 +216,75 @@ fun LanguageFilterRow(
 }
 
 @Composable
+fun LibraryHeader(
+    storyCount: Int,
+    language: Language
+) {
+    val title = if (language == Language.ENGLISH) "Story Library" else "故事寶庫"
+    val subtitle = if (language == Language.ENGLISH) {
+        "Pick a tale and start the adventure"
+    } else {
+        "挑一則故事開始冒險"
+    }
+    val countLabel = if (language == Language.ENGLISH) {
+        "$storyCount stories available"
+    } else {
+        "共 $storyCount 則故事"
+    }
+    val gradient = Brush.linearGradient(
+        colors = listOf(
+            MaterialTheme.colorScheme.primary,
+            MaterialTheme.colorScheme.secondary
+        )
+    )
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .height(150.dp)
+            .clip(RoundedCornerShape(24.dp))
+            .background(gradient)
+            .padding(20.dp)
+    ) {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
+                Text(
+                    text = subtitle,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f)
+                )
+            }
+            Surface(
+                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
+                contentColor = MaterialTheme.colorScheme.onSurface,
+                shape = RoundedCornerShape(999.dp)
+            ) {
+                Text(
+                    text = countLabel,
+                    style = MaterialTheme.typography.labelMedium,
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                )
+            }
+        }
+    }
+}
+
+@Composable
 fun StoryCard(
     story: Story,
     language: Language,
     onClick: () -> Unit
 ) {
+    val minutes = max(1, story.duration / 60)
     val title = when (language) {
         Language.CHINESE -> story.title.ifBlank { story.titleEn }
         Language.ENGLISH -> story.titleEn.ifBlank { story.title }
@@ -196,6 +294,27 @@ fun StoryCard(
     } else {
         story.category.displayNameZh
     }
+    val durationLabel = if (language == Language.ENGLISH) {
+        "$minutes min"
+    } else {
+        "約 $minutes 分鐘"
+    }
+    val ageLabel = if (language == Language.ENGLISH) {
+        "${story.ageRange} yrs"
+    } else {
+        "${story.ageRange} 歲"
+    }
+    val badgeLabel = if (story.isPreset) {
+        if (language == Language.ENGLISH) "Preset" else "預設"
+    } else {
+        "AI"
+    }
+    val headerGradient = Brush.linearGradient(
+        colors = listOf(
+            MaterialTheme.colorScheme.primary.copy(alpha = 0.9f),
+            MaterialTheme.colorScheme.tertiary.copy(alpha = 0.8f)
+        )
+    )
 
     Card(
         modifier = Modifier
@@ -214,20 +333,38 @@ fun StoryCard(
                     .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)),
                 contentAlignment = Alignment.Center
             ) {
-                // 暫時使用文字代替圖片
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.primaryContainer
+                    color = Color.Transparent
                 ) {
                     Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(headerGradient)
                     ) {
-                        Text(
-                            text = categoryLabel,
-                            style = MaterialTheme.typography.headlineMedium,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(12.dp),
+                            verticalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Surface(
+                                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
+                                contentColor = MaterialTheme.colorScheme.onSurface,
+                                shape = RoundedCornerShape(999.dp)
+                            ) {
+                                Text(
+                                    text = badgeLabel,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                                )
+                            }
+                            Text(
+                                text = categoryLabel,
+                                style = MaterialTheme.typography.headlineSmall,
+                                color = MaterialTheme.colorScheme.onPrimary
+                            )
+                        }
                     }
                 }
             }
@@ -243,14 +380,31 @@ fun StoryCard(
                     overflow = TextOverflow.Ellipsis
                 )
 
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
-                Text(
-                    text = "${story.duration / 60} 分鐘",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    StoryMetaPill(text = ageLabel)
+                    StoryMetaPill(text = durationLabel)
+                }
             }
         }
+    }
+}
+
+@Composable
+fun StoryMetaPill(text: String) {
+    Surface(
+        color = MaterialTheme.colorScheme.secondaryContainer,
+        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+        shape = RoundedCornerShape(999.dp)
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelSmall,
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+        )
     }
 }

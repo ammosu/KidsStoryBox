@@ -1,7 +1,6 @@
 package com.example.kidsstory.presentation.screens.ai_generation
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -23,6 +22,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -46,11 +46,17 @@ fun AIGenerationScreen(
     viewModel: AIGenerationViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val isEnglish = uiState.language == Language.ENGLISH
+    val topicSuggestions = if (isEnglish) {
+        listOf("Space adventure", "Ocean rescue", "Magic garden", "Kindness lesson")
+    } else {
+        listOf("太空探險", "海底救援", "魔法花園", "分享與友誼")
+    }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("創造你的故事") },
+                title = { Text(if (isEnglish) "Create Your Story" else "創造你的故事") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "返回")
@@ -67,33 +73,66 @@ fun AIGenerationScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text(
-                text = "告訴我們你想要的故事設定",
+                text = if (isEnglish) {
+                    "Tell us the story you want to hear"
+                } else {
+                    "告訴我們你想要的故事設定"
+                },
                 style = MaterialTheme.typography.titleMedium
             )
 
             OutlinedTextField(
                 value = uiState.topic,
                 onValueChange = viewModel::updateTopic,
-                label = { Text("主題或關鍵字") },
+                label = { Text(if (isEnglish) "Topic or keywords" else "主題或關鍵字") },
+                placeholder = {
+                    Text(if (isEnglish) "e.g. brave fox, lost toy" else "例如：勇敢狐狸、找回玩具")
+                },
+                supportingText = {
+                    Text(if (isEnglish) "Start with a simple idea" else "從一個簡單的想法開始")
+                },
                 modifier = Modifier.fillMaxWidth()
             )
+
+            Text(
+                text = if (isEnglish) "Quick ideas" else "熱門主題",
+                style = MaterialTheme.typography.titleSmall
+            )
+            LazyRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                contentPadding = PaddingValues(horizontal = 4.dp)
+            ) {
+                items(topicSuggestions) { suggestion ->
+                    SuggestionChip(
+                        onClick = { viewModel.updateTopic(suggestion) },
+                        label = { Text(suggestion) }
+                    )
+                }
+            }
 
             OutlinedTextField(
                 value = uiState.characters,
                 onValueChange = viewModel::updateCharacters,
-                label = { Text("角色（可選）") },
+                label = { Text(if (isEnglish) "Characters (optional)" else "角色（可選）") },
+                placeholder = {
+                    Text(if (isEnglish) "e.g. Mia, Robot Z" else "例如：小米、機器人 Z")
+                },
                 modifier = Modifier.fillMaxWidth()
             )
 
             OutlinedTextField(
                 value = uiState.setting,
                 onValueChange = viewModel::updateSetting,
-                label = { Text("場景（可選）") },
+                label = { Text(if (isEnglish) "Setting (optional)" else "場景（可選）") },
+                placeholder = {
+                    Text(if (isEnglish) "e.g. forest, school, moon" else "例如：森林、校園、月球")
+                },
                 modifier = Modifier.fillMaxWidth()
             )
 
             Text(
-                text = "故事分類",
+                text = if (isEnglish) "Category" else "故事分類",
                 style = MaterialTheme.typography.titleSmall
             )
             LazyRow(
@@ -124,7 +163,7 @@ fun AIGenerationScreen(
             }
 
             Text(
-                text = "語言",
+                text = if (isEnglish) "Language" else "語言",
                 style = MaterialTheme.typography.titleSmall
             )
             Row(
@@ -147,10 +186,10 @@ fun AIGenerationScreen(
                 onClick = {
                     viewModel.generateStory()
                 },
-                enabled = !uiState.isGenerating,
+                enabled = uiState.topic.isNotBlank() && !uiState.isGenerating,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("生成故事")
+                Text(if (isEnglish) "Generate story" else "生成故事")
             }
 
             if (uiState.isGenerating) {
@@ -168,7 +207,11 @@ fun AIGenerationScreen(
 
             Spacer(modifier = Modifier.weight(1f))
             Text(
-                text = "提示：AI 生成服務尚未串接，會在後續版本加入。",
+                text = if (isEnglish) {
+                    "Note: AI generation is not connected yet."
+                } else {
+                    "提示：AI 生成服務尚未串接，會在後續版本加入。"
+                },
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )

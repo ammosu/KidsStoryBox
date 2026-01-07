@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Pause
@@ -31,6 +32,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -50,6 +52,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.kidsstory.domain.model.Language
+import kotlin.math.max
 
 /**
  * 故事播放器畫面
@@ -64,6 +67,7 @@ fun StoryPlayerScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var showSegments by remember { mutableStateOf(false) }
+    val isEnglish = uiState.language == Language.ENGLISH
 
     LaunchedEffect(storyId) {
         viewModel.loadStory(storyId)
@@ -77,8 +81,19 @@ fun StoryPlayerScreen(
 
     Scaffold(
         topBar = {
+            val appBarTitle = uiState.story?.let { story ->
+                if (uiState.language == Language.ENGLISH) {
+                    story.titleEn.ifBlank { story.title }
+                } else {
+                    story.title
+                }
+            } ?: if (uiState.language == Language.ENGLISH) {
+                "Story Player"
+            } else {
+                "故事播放"
+            }
             TopAppBar(
-                title = { Text(uiState.story?.title ?: "故事播放") },
+                title = { Text(appBarTitle) },
                 navigationIcon = {
                     IconButton(onClick = {
                         viewModel.stopPlayback()
@@ -110,7 +125,8 @@ fun StoryPlayerScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = uiState.error ?: "發生錯誤",
+                        text = uiState.error
+                            ?: if (isEnglish) "Something went wrong" else "發生錯誤",
                         color = MaterialTheme.colorScheme.error
                     )
                 }
@@ -123,7 +139,7 @@ fun StoryPlayerScreen(
                         .padding(padding),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("找不到故事內容")
+                    Text(if (isEnglish) "Story not found" else "找不到故事內容")
                 }
             }
 
@@ -136,6 +152,32 @@ fun StoryPlayerScreen(
                 }.ifBlank {
                     segment?.contentZh?.ifBlank { segment?.contentEn ?: "" } ?: ""
                 }
+                val emptyContentLabel = if (isEnglish) "No content yet" else "尚無內容"
+                val minutes = max(1, (story?.duration ?: 0) / 60)
+                val categoryLabel = if (isEnglish) {
+                    story?.category?.displayNameEn ?: ""
+                } else {
+                    story?.category?.displayNameZh ?: ""
+                }
+                val ageLabel = if (isEnglish) {
+                    "${story?.ageRange ?: ""} yrs"
+                } else {
+                    "${story?.ageRange ?: ""} 歲"
+                }
+                val durationLabel = if (isEnglish) {
+                    "$minutes min"
+                } else {
+                    "約 $minutes 分鐘"
+                }
+                val segmentLabel = if (isEnglish) {
+                    "Segment ${uiState.currentSegmentIndex + 1}"
+                } else {
+                    "第 ${uiState.currentSegmentIndex + 1} 段"
+                }
+                val segmentListLabel = if (isEnglish) "Segments" else "段落列表"
+                val settingsLabel = if (isEnglish) "Playback settings" else "播放設定"
+                val speedLabel = if (isEnglish) "Speed" else "語速"
+                val pitchLabel = if (isEnglish) "Pitch" else "音調"
 
                 Column(
                     modifier = Modifier
@@ -160,6 +202,25 @@ fun StoryPlayerScreen(
                         )
                     }
 
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        if (categoryLabel.isNotBlank()) {
+                            StoryMetaPill(text = categoryLabel)
+                        }
+                        if (story?.ageRange?.isNotBlank() == true) {
+                            StoryMetaPill(text = ageLabel)
+                        }
+                        StoryMetaPill(text = durationLabel)
+                    }
+
+                    Text(
+                        text = segmentLabel,
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -173,7 +234,7 @@ fun StoryPlayerScreen(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = segmentText.ifBlank { "尚無內容" },
+                                text = segmentText.ifBlank { emptyContentLabel },
                                 style = MaterialTheme.typography.headlineSmall,
                                 textAlign = TextAlign.Center
                             )
@@ -197,33 +258,47 @@ fun StoryPlayerScreen(
                                 style = MaterialTheme.typography.bodySmall
                             )
                             TextButton(onClick = { showSegments = true }) {
-                                Text("段落列表")
+                                Text(segmentListLabel)
                             }
                         }
                     }
 
                     Text(
-                        text = "播放設定",
+                        text = settingsLabel,
                         style = MaterialTheme.typography.titleSmall
                     )
-                    Text(
-                        text = "語速 ${String.format("%.2fx", uiState.speechRate)}",
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                    Slider(
-                        value = uiState.speechRate,
-                        onValueChange = { viewModel.updateSpeechRate(it) },
-                        valueRange = 0.5f..1.5f
-                    )
-                    Text(
-                        text = "音調 ${String.format("%.2fx", uiState.speechPitch)}",
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                    Slider(
-                        value = uiState.speechPitch,
-                        onValueChange = { viewModel.updateSpeechPitch(it) },
-                        valueRange = 0.5f..1.5f
-                    )
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant
+                        )
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(12.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text(
+                                text = "$speedLabel ${String.format("%.2fx", uiState.speechRate)}",
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                            Slider(
+                                value = uiState.speechRate,
+                                onValueChange = { viewModel.updateSpeechRate(it) },
+                                valueRange = 0.5f..1.5f
+                            )
+                            Text(
+                                text = "$pitchLabel ${String.format("%.2fx", uiState.speechPitch)}",
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                            Slider(
+                                value = uiState.speechPitch,
+                                onValueChange = { viewModel.updateSpeechPitch(it) },
+                                valueRange = 0.5f..1.5f
+                            )
+                        }
+                    }
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -287,7 +362,7 @@ fun StoryPlayerScreen(
                                 .padding(horizontal = 16.dp, vertical = 8.dp)
                         ) {
                             Text(
-                                text = "段落列表",
+                                text = segmentListLabel,
                                 style = MaterialTheme.typography.titleMedium
                             )
                             Spacer(modifier = Modifier.height(8.dp))
@@ -327,7 +402,11 @@ fun StoryPlayerScreen(
                                                 .padding(12.dp)
                                         ) {
                                             Text(
-                                                text = "第 ${index + 1} 段",
+                                                text = if (isEnglish) {
+                                                    "Segment ${index + 1}"
+                                                } else {
+                                                    "第 ${index + 1} 段"
+                                                },
                                                 style = MaterialTheme.typography.labelMedium,
                                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                                             )
@@ -346,5 +425,20 @@ fun StoryPlayerScreen(
                 }
             }
         }
+    }
+}
+
+@Composable
+fun StoryMetaPill(text: String) {
+    Surface(
+        color = MaterialTheme.colorScheme.secondaryContainer,
+        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+        shape = RoundedCornerShape(999.dp)
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelSmall,
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+        )
     }
 }

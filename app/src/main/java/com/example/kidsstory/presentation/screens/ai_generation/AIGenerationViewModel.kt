@@ -20,30 +20,35 @@ class AIGenerationViewModel @Inject constructor() : ViewModel() {
     val uiState: StateFlow<AIGenerationUiState> = _uiState.asStateFlow()
 
     fun updateTopic(topic: String) {
-        _uiState.update { it.copy(topic = topic) }
+        _uiState.update { it.copy(topic = topic, error = null) }
     }
 
     fun updateCharacters(characters: String) {
-        _uiState.update { it.copy(characters = characters) }
+        _uiState.update { it.copy(characters = characters, error = null) }
     }
 
     fun updateSetting(setting: String) {
-        _uiState.update { it.copy(setting = setting) }
+        _uiState.update { it.copy(setting = setting, error = null) }
     }
 
     fun selectCategory(category: StoryCategory?) {
-        _uiState.update { it.copy(selectedCategory = category) }
+        _uiState.update { it.copy(selectedCategory = category, error = null) }
     }
 
     fun selectLanguage(language: Language) {
-        _uiState.update { it.copy(language = language) }
+        _uiState.update { it.copy(language = language, error = null) }
     }
 
     fun generateStory() {
         _uiState.update {
+            val errorMessage = if (it.language == Language.ENGLISH) {
+                "AI generation is not connected yet."
+            } else {
+                "AI 生成尚未整合，請稍後再試"
+            }
             it.copy(
                 isGenerating = false,
-                error = "AI 生成尚未整合，請稍後再試"
+                error = errorMessage
             )
         }
     }
