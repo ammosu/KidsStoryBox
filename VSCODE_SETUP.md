@@ -42,7 +42,7 @@ cd /opt/android-studio/bin
 ### 開啟本專案
 ```bash
 # 在 Android Studio 中：
-# File -> Open -> 選擇 /home/cw/git_project/story
+# File -> Open -> 選擇 path/to/KidsStoryBox
 ```
 
 ---
@@ -126,7 +126,7 @@ code --install-extension redhat.vscode-xml
 ### 步驟 4：設定專案的 local.properties
 
 ```bash
-cd /home/cw/git_project/story
+cd path/to/KidsStoryBox
 
 # 建立 local.properties 檔案
 cat > local.properties << EOF
@@ -138,7 +138,7 @@ EOF
 
 ```bash
 # 在專案目錄開啟 VSCode
-cd /home/cw/git_project/story
+cd path/to/KidsStoryBox
 code .
 ```
 
@@ -146,7 +146,7 @@ code .
 
 ```bash
 # 在專案根目錄執行
-cd /home/cw/git_project/story
+cd path/to/KidsStoryBox
 
 # 給予 gradlew 執行權限
 chmod +x gradlew
@@ -200,7 +200,7 @@ adb install app/build/outputs/apk/debug/app-debug.apk
 
 2. **開啟 VSCode**
    ```bash
-   cd /home/cw/git_project/story
+   cd path/to/KidsStoryBox
    code .
    ```
 
@@ -256,7 +256,7 @@ adb shell pm clear com.example.kidsstory
 ```bash
 # 檢查環境變數
 echo $ANDROID_HOME
-# 應該顯示：/home/cw/Android/Sdk
+# 應該顯示：$HOME/Android/Sdk
 
 # 如果沒有，重新載入 bashrc
 source ~/.bashrc

@@ -77,7 +77,7 @@ Android Studio 已成功安裝到：`/opt/android-studio/`
 ### 在歡迎畫面
 
 1. 點擊 **"Open"** 按鈕
-2. 瀏覽到：`/home/cw/git_project/story`
+2. 瀏覽到：`path/to/KidsStoryBox`
 3. 點擊 "OK"
 
 ### 首次開啟專案時
@@ -149,7 +149,7 @@ Android Studio 已成功安裝到：`/opt/android-studio/`
 **解決方法：**
 ```bash
 # 在終端機執行
-cd /home/cw/git_project/story
+cd path/to/KidsStoryBox
 chmod +x gradlew
 ./gradlew clean
 ```
@@ -161,7 +161,7 @@ chmod +x gradlew
 
 **解決方法：**
 1. 開啟 File → Settings → Appearance & Behavior → System Settings → Android SDK
-2. SDK Location 應該是：`/home/cw/Android/Sdk`
+2. SDK Location 應該是：`$HOME/Android/Sdk`
 3. 如果路徑不對，點擊 "Edit" 重新設定
 
 ### 問題 3：模擬器無法啟動
