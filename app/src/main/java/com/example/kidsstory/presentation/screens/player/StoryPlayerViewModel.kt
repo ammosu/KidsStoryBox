@@ -117,6 +117,10 @@ class StoryPlayerViewModel @Inject constructor(
         }
     }
 
+    fun seekToSegment(index: Int) {
+        moveToSegment(index, _uiState.value.isPlaying)
+    }
+
     private fun startPlayback() {
         val story = _uiState.value.story ?: return
         viewModelScope.launch {
