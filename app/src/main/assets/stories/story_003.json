@@ -1,0 +1,66 @@
+{
+  "id": "story_003",
+  "title": "媽媽的愛",
+  "titleEn": "Mother's Love",
+  "category": "FAMILY",
+  "ageRange": "3-6",
+  "coverImage": "asset://illustrations/family_cover.jpg",
+  "segments": [
+    {
+      "sequenceNumber": 1,
+      "contentZh": "小貓咪和媽媽一起住在溫暖的家裡。",
+      "contentEn": "Little kitten lived with mother in a warm home.",
+      "characterRole": "NARRATOR",
+      "duration": 4
+    },
+    {
+      "sequenceNumber": 2,
+      "contentZh": "有一天，小貓咪生病了，發燒不舒服。",
+      "contentEn": "One day, the kitten got sick and had a fever.",
+      "characterRole": "NARRATOR",
+      "duration": 4
+    },
+    {
+      "sequenceNumber": 3,
+      "contentZh": "媽媽，我好不舒服...",
+      "contentEn": "Mom, I don't feel well...",
+      "characterRole": "PROTAGONIST",
+      "duration": 3
+    },
+    {
+      "sequenceNumber": 4,
+      "contentZh": "別擔心寶貝，媽媽會一直陪著你。",
+      "contentEn": "Don't worry dear, mommy will stay with you.",
+      "characterRole": "PARENT",
+      "duration": 4
+    },
+    {
+      "sequenceNumber": 5,
+      "contentZh": "媽媽整夜照顧小貓咪，給它喝水，量體溫。",
+      "contentEn": "Mother took care of the kitten all night, giving water and checking temperature.",
+      "characterRole": "NARRATOR",
+      "duration": 5
+    },
+    {
+      "sequenceNumber": 6,
+      "contentZh": "媽媽，妳怎麼不睡覺？",
+      "contentEn": "Mom, why don't you sleep?",
+      "characterRole": "PROTAGONIST",
+      "duration": 3
+    },
+    {
+      "sequenceNumber": 7,
+      "contentZh": "因為媽媽要確保你安全舒適，這就是媽媽的愛。",
+      "contentEn": "Because mommy needs to make sure you're safe and comfortable, that's a mother's love.",
+      "characterRole": "PARENT",
+      "duration": 5
+    },
+    {
+      "sequenceNumber": 8,
+      "contentZh": "第二天早上，小貓咪好多了，它給了媽媽一個大大的擁抱。",
+      "contentEn": "The next morning, the kitten felt better and gave mother a big hug.",
+      "characterRole": "NARRATOR",
+      "duration": 5
+    }
+  ]
+}

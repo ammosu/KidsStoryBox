@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">故事寶盒</string>
+
+    <!-- 通用 -->
+    <string name="ok">確定</string>
+    <string name="cancel">取消</string>
+    <string name="loading">載入中…</string>
+    <string name="error">錯誤</string>
+    <string name="retry">重試</string>
+
+    <!-- 語言切換 -->
+    <string name="language_chinese">中文</string>
+    <string name="language_english">English</string>
+
+    <!-- 故事列表 -->
+    <string name="story_library">故事寶庫</string>
+    <string name="preset_stories">精選故事</string>
+    <string name="ai_generated_stories">AI創作故事</string>
+    <string name="create_new_story">創造新故事</string>
+    <string name="downloaded">已下載</string>
+    <string name="not_downloaded">未下載</string>
+
+    <!-- 故事分類 -->
+    <string name="category_all">全部</string>
+    <string name="category_adventure">冒險</string>
+    <string name="category_friendship">友誼</string>
+    <string name="category_family">家庭</string>
+    <string name="category_science">科普</string>
+    <string name="category_nature">自然</string>
+    <string name="category_fantasy">奇幻</string>
+    <string name="category_daily_life">日常生活</string>
+    <string name="category_moral">品德教育</string>
+
+    <!-- 播放器 -->
+    <string name="play">播放</string>
+    <string name="pause">暫停</string>
+    <string name="previous">上一段</string>
+    <string name="next">下一段</string>
+    <string name="player_loading">正在載入故事…</string>
+
+    <!-- AI生成 -->
+    <string name="ai_generate_title">創造你的故事</string>
+    <string name="select_theme">選擇故事主題：</string>
+    <string name="select_character">選擇主角：</string>
+    <string name="select_moral">故事要教什麼：</string>
+    <string name="generate_story">開始創造</string>
+    <string name="generating">正在創造故事…</string>
+
+    <!-- 下載 -->
+    <string name="download">下載</string>
+    <string name="downloading">下載中…</string>
+    <string name="download_complete">下載完成</string>
+    <string name="download_failed">下載失敗</string>
+</resources>

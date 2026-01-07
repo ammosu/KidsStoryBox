@@ -1,0 +1,66 @@
+{
+  "id": "story_005",
+  "title": "分享的快樂",
+  "titleEn": "The Joy of Sharing",
+  "category": "MORAL",
+  "ageRange": "3-6",
+  "coverImage": "asset://illustrations/sharing_cover.jpg",
+  "segments": [
+    {
+      "sequenceNumber": 1,
+      "contentZh": "小猴子有一籃子香蕉，都是它最愛吃的。",
+      "contentEn": "Little monkey had a basket of bananas, his favorite food.",
+      "characterRole": "NARRATOR",
+      "duration": 4
+    },
+    {
+      "sequenceNumber": 2,
+      "contentZh": "這些都是我的香蕉！我要自己吃光光！",
+      "contentEn": "These are all my bananas! I'll eat them all by myself!",
+      "characterRole": "PROTAGONIST",
+      "duration": 4
+    },
+    {
+      "sequenceNumber": 3,
+      "contentZh": "這時，小猴子的朋友們來了。",
+      "contentEn": "Then, the monkey's friends came over.",
+      "characterRole": "NARRATOR",
+      "duration": 3
+    },
+    {
+      "sequenceNumber": 4,
+      "contentZh": "小猴子，我們好餓啊，可以分我們一些香蕉嗎？",
+      "contentEn": "Little monkey, we're so hungry, can you share some bananas with us?",
+      "characterRole": "ANIMAL",
+      "duration": 4
+    },
+    {
+      "sequenceNumber": 5,
+      "contentZh": "小猴子想了想，決定把香蕉分給朋友們。",
+      "contentEn": "The monkey thought for a moment and decided to share the bananas with friends.",
+      "characterRole": "NARRATOR",
+      "duration": 4
+    },
+    {
+      "sequenceNumber": 6,
+      "contentZh": "來，大家一起吃吧！",
+      "contentEn": "Come on, let's eat together!",
+      "characterRole": "PROTAGONIST",
+      "duration": 3
+    },
+    {
+      "sequenceNumber": 7,
+      "contentZh": "朋友們都很開心，大家一起分享美味的香蕉。",
+      "contentEn": "Friends were happy, everyone shared the delicious bananas together.",
+      "characterRole": "NARRATOR",
+      "duration": 5
+    },
+    {
+      "sequenceNumber": 8,
+      "contentZh": "小猴子發現，和朋友一起分享，比自己吃更快樂。",
+      "contentEn": "The monkey discovered that sharing with friends is happier than eating alone.",
+      "characterRole": "NARRATOR",
+      "duration": 5
+    }
+  ]
+}

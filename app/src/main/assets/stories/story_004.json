@@ -1,0 +1,66 @@
+{
+  "id": "story_004",
+  "title": "小水滴的旅行",
+  "titleEn": "Little Water Drop's Journey",
+  "category": "SCIENCE",
+  "ageRange": "3-6",
+  "coverImage": "asset://illustrations/water_cover.jpg",
+  "segments": [
+    {
+      "sequenceNumber": 1,
+      "contentZh": "我是一滴小水滴，住在大海裡。",
+      "contentEn": "I'm a little water drop, living in the ocean.",
+      "characterRole": "PROTAGONIST",
+      "duration": 4
+    },
+    {
+      "sequenceNumber": 2,
+      "contentZh": "有一天，太陽出來了，把小水滴曬得暖暖的。",
+      "contentEn": "One day, the sun came out and warmed the water drop.",
+      "characterRole": "NARRATOR",
+      "duration": 4
+    },
+    {
+      "sequenceNumber": 3,
+      "contentZh": "哇！我的身體變輕了，我飛起來了！",
+      "contentEn": "Wow! My body became lighter, I'm flying up!",
+      "characterRole": "PROTAGONIST",
+      "duration": 4
+    },
+    {
+      "sequenceNumber": 4,
+      "contentZh": "小水滴變成了水蒸氣，飛到天空中。",
+      "contentEn": "The water drop became water vapor and flew into the sky.",
+      "characterRole": "NARRATOR",
+      "duration": 4
+    },
+    {
+      "sequenceNumber": 5,
+      "contentZh": "在天空中，小水滴和其他水滴們聚在一起，變成了雲。",
+      "contentEn": "In the sky, the drop joined other drops and became a cloud.",
+      "characterRole": "NARRATOR",
+      "duration": 5
+    },
+    {
+      "sequenceNumber": 6,
+      "contentZh": "天氣變冷了，我又變重了，我要下雨了！",
+      "contentEn": "The weather got cold, I became heavy again, I'm going to rain!",
+      "characterRole": "PROTAGONIST",
+      "duration": 4
+    },
+    {
+      "sequenceNumber": 7,
+      "contentZh": "小水滴從天上掉下來，變成雨水，滋潤了大地。",
+      "contentEn": "The drop fell from the sky as rain, watering the earth.",
+      "characterRole": "NARRATOR",
+      "duration": 5
+    },
+    {
+      "sequenceNumber": 8,
+      "contentZh": "最後，小水滴順著小溪，又回到了大海，準備下一次旅行。",
+      "contentEn": "Finally, the drop flowed through streams back to the ocean, ready for the next journey.",
+      "characterRole": "NARRATOR",
+      "duration": 6
+    }
+  ]
+}
