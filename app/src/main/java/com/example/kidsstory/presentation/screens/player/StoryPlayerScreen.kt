@@ -29,6 +29,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -200,6 +201,29 @@ fun StoryPlayerScreen(
                             }
                         }
                     }
+
+                    Text(
+                        text = "播放設定",
+                        style = MaterialTheme.typography.titleSmall
+                    )
+                    Text(
+                        text = "語速 ${String.format("%.2fx", uiState.speechRate)}",
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                    Slider(
+                        value = uiState.speechRate,
+                        onValueChange = { viewModel.updateSpeechRate(it) },
+                        valueRange = 0.5f..1.5f
+                    )
+                    Text(
+                        text = "音調 ${String.format("%.2fx", uiState.speechPitch)}",
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                    Slider(
+                        value = uiState.speechPitch,
+                        onValueChange = { viewModel.updateSpeechPitch(it) },
+                        valueRange = 0.5f..1.5f
+                    )
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),

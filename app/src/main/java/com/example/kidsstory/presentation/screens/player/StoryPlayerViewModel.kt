@@ -54,6 +54,7 @@ class StoryPlayerViewModel @Inject constructor(
         if (status == TextToSpeech.SUCCESS) {
             ttsReady = true
             setTtsLanguage(_uiState.value.language)
+            applyTtsSettings()
             if (pendingSpeak) {
                 pendingSpeak = false
                 playCurrentSegmentInternal()
@@ -117,6 +118,20 @@ class StoryPlayerViewModel @Inject constructor(
         }
     }
 
+    fun updateSpeechRate(rate: Float) {
+        _uiState.update { it.copy(speechRate = rate.coerceIn(0.5f, 1.5f)) }
+        if (ttsReady) {
+            applyTtsSettings()
+        }
+    }
+
+    fun updateSpeechPitch(pitch: Float) {
+        _uiState.update { it.copy(speechPitch = pitch.coerceIn(0.5f, 1.5f)) }
+        if (ttsReady) {
+            applyTtsSettings()
+        }
+    }
+
     fun seekToSegment(index: Int) {
         moveToSegment(index, _uiState.value.isPlaying)
     }
@@ -159,6 +174,8 @@ class StoryPlayerViewModel @Inject constructor(
             pendingSpeak = true
             return
         }
+
+        applyTtsSettings(state.speechRate, state.speechPitch)
 
         val text = when (state.language) {
             Language.CHINESE -> segment.contentZh.ifBlank { segment.contentEn }
@@ -207,6 +224,14 @@ class StoryPlayerViewModel @Inject constructor(
         }
     }
 
+    private fun applyTtsSettings(
+        rate: Float = _uiState.value.speechRate,
+        pitch: Float = _uiState.value.speechPitch
+    ) {
+        tts?.setSpeechRate(rate.coerceIn(0.5f, 1.5f))
+        tts?.setPitch(pitch.coerceIn(0.5f, 1.5f))
+    }
+
     override fun onCleared() {
         tts?.stop()
         tts?.shutdown()
@@ -222,7 +247,9 @@ data class StoryPlayerUiState(
     val isLoading: Boolean = true,
     val error: String? = null,
     val ttsError: String? = null,
-    val language: Language = Language.CHINESE
+    val language: Language = Language.CHINESE,
+    val speechRate: Float = 1.0f,
+    val speechPitch: Float = 1.0f
 ) {
     val segmentCount: Int
         get() = story?.segments?.size ?: 0
