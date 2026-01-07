@@ -26,6 +26,7 @@ import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -51,6 +52,13 @@ fun AIGenerationScreen(
         listOf("Space adventure", "Ocean rescue", "Magic garden", "Kindness lesson")
     } else {
         listOf("太空探險", "海底救援", "魔法花園", "分享與友誼")
+    }
+
+    // 當故事生成成功後，跳轉到播放器
+    LaunchedEffect(uiState.generatedStoryId) {
+        uiState.generatedStoryId?.let { storyId ->
+            onStoryGenerated(storyId)
+        }
     }
 
     Scaffold(
@@ -205,16 +213,18 @@ fun AIGenerationScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.weight(1f))
-            Text(
-                text = if (isEnglish) {
-                    "Note: AI generation is not connected yet."
-                } else {
-                    "提示：AI 生成服務尚未串接，會在後續版本加入。"
-                },
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            if (uiState.isGenerating) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = if (isEnglish) {
+                        "Generating your story... This may take 10-30 seconds."
+                    } else {
+                        "正在生成故事... 大約需要 10-30 秒。"
+                    },
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
         }
     }
 }

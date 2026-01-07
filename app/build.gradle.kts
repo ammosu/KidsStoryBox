@@ -21,6 +21,24 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+
+        // 讀取 local.properties 中的 API keys
+        val properties = org.jetbrains.kotlin.konan.properties.Properties()
+        val localPropertiesFile = rootProject.file("local.properties")
+        if (localPropertiesFile.exists()) {
+            properties.load(localPropertiesFile.inputStream())
+        }
+
+        buildConfigField(
+            "String",
+            "GEMINI_API_KEY",
+            "\"${properties.getProperty("GEMINI_API_KEY", "")}\""
+        )
+        buildConfigField(
+            "String",
+            "ELEVENLABS_API_KEY",
+            "\"${properties.getProperty("ELEVENLABS_API_KEY", "")}\""
+        )
     }
 
     buildTypes {
@@ -47,6 +65,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     composeOptions {

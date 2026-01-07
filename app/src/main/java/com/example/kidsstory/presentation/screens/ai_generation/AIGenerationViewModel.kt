@@ -1,20 +1,25 @@
 package com.example.kidsstory.presentation.screens.ai_generation
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.kidsstory.domain.model.Language
 import com.example.kidsstory.domain.model.StoryCategory
+import com.example.kidsstory.domain.usecases.GenerateStoryUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 /**
- * AI 故事生成畫面 ViewModel（目前為 UI 狀態管理）
+ * AI 故事生成畫面 ViewModel
  */
 @HiltViewModel
-class AIGenerationViewModel @Inject constructor() : ViewModel() {
+class AIGenerationViewModel @Inject constructor(
+    private val generateStoryUseCase: GenerateStoryUseCase
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AIGenerationUiState())
     val uiState: StateFlow<AIGenerationUiState> = _uiState.asStateFlow()
@@ -40,17 +45,95 @@ class AIGenerationViewModel @Inject constructor() : ViewModel() {
     }
 
     fun generateStory() {
-        _uiState.update {
-            val errorMessage = if (it.language == Language.ENGLISH) {
-                "AI generation is not connected yet."
-            } else {
-                "AI 生成尚未整合，請稍後再試"
+        val state = _uiState.value
+
+        if (state.topic.isBlank()) {
+            _uiState.update {
+                it.copy(
+                    error = if (it.language == Language.ENGLISH) {
+                        "Please enter a topic"
+                    } else {
+                        "請輸入主題"
+                    }
+                )
             }
-            it.copy(
-                isGenerating = false,
-                error = errorMessage
-            )
+            return
         }
+
+        viewModelScope.launch {
+            _uiState.update { it.copy(isGenerating = true, error = null, generatedStoryId = null) }
+
+            try {
+                // 構建 AI 提示詞
+                val theme = buildTheme(state)
+                val protagonist = state.characters.ifBlank {
+                    if (state.language == Language.ENGLISH) "a brave child" else "一個勇敢的孩子"
+                }
+                val educationalGoal = state.selectedCategory?.let {
+                    if (state.language == Language.ENGLISH) {
+                        it.displayNameEn
+                    } else {
+                        it.displayNameZh
+                    }
+                } ?: if (state.language == Language.ENGLISH) "courage and kindness" else "勇敢與善良"
+
+                val languageCode = if (state.language == Language.ENGLISH) "en" else "zh"
+
+                // 調用 AI 生成
+                val result = generateStoryUseCase(
+                    theme = theme,
+                    protagonist = protagonist,
+                    educationalGoal = educationalGoal,
+                    language = languageCode
+                )
+
+                result.fold(
+                    onSuccess = { story ->
+                        _uiState.update {
+                            it.copy(
+                                isGenerating = false,
+                                generatedStoryId = story.id,
+                                error = null
+                            )
+                        }
+                    },
+                    onFailure = { error ->
+                        _uiState.update {
+                            it.copy(
+                                isGenerating = false,
+                                error = if (it.language == Language.ENGLISH) {
+                                    "Failed to generate story: ${error.message}"
+                                } else {
+                                    "故事生成失敗：${error.message}"
+                                }
+                            )
+                        }
+                    }
+                )
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(
+                        isGenerating = false,
+                        error = if (it.language == Language.ENGLISH) {
+                            "Error: ${e.message}"
+                        } else {
+                            "發生錯誤：${e.message}"
+                        }
+                    )
+                }
+            }
+        }
+    }
+
+    private fun buildTheme(state: AIGenerationUiState): String {
+        val parts = mutableListOf<String>()
+        parts.add(state.topic)
+
+        if (state.setting.isNotBlank()) {
+            parts.add(state.setting)
+        }
+
+        return parts.joinToString(" ")
     }
 }
 
@@ -61,5 +144,6 @@ data class AIGenerationUiState(
     val selectedCategory: StoryCategory? = null,
     val language: Language = Language.CHINESE,
     val isGenerating: Boolean = false,
+    val generatedStoryId: String? = null,
     val error: String? = null
 )

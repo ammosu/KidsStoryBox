@@ -74,26 +74,27 @@ app/src/main/java/com/example/kidsstory/
 - [x] 導航結構（Navigation Compose）
 - [x] 基礎 UI 主題和組件
 
-### 第 2 週：預設故事功能
-- [ ] 準備 5-10 個預設故事（中英文）
-- [ ] 故事列表 UI 實作
-- [ ] 基礎播放器 UI
-- [ ] 臨時使用 Android 系統 TTS 測試
-- [ ] 預設故事資料匯入
+### 第 2 週：預設故事功能 ✅
+- [x] 準備 5-10 個預設故事（中英文）
+- [x] 故事列表 UI 實作
+- [x] 基礎播放器 UI
+- [x] 臨時使用 Android 系統 TTS 測試
+- [x] 預設故事資料匯入
 
-### 第 3 週：高品質多角色語音
-- [ ] 整合 ElevenLabs API
+### 第 3 週：AI 故事生成 🔄
+- [x] 整合 Google Gemini API
+- [x] AI 生成 UI（主題/角色選擇）
+- [x] 故事生成流程實作
+- [x] 生成內容儲存到資料庫
+- [ ] 內容安全過濾（使用 Gemini 內建安全設定）
+- [ ] 完整測試與優化
+
+### 第 4 週：高品質多角色語音
+- [ ] 整合 ElevenLabs API（或繼續使用系統 TTS）
 - [ ] 為預設故事預生成多角色音訊
 - [ ] Media3 ExoPlayer 整合
 - [ ] 角色頭像和動畫
 - [ ] 字幕同步實作
-
-### 第 4 週：AI 故事生成
-- [ ] 整合 Google Gemini API
-- [ ] AI 生成 UI（主題/角色選擇）
-- [ ] 故事生成流程實作
-- [ ] 內容安全過濾
-- [ ] 生成內容快取
 
 ### 第 5 週：離線支援
 - [ ] 預設故事資源打包（assets）
@@ -145,12 +146,24 @@ app/src/main/java/com/example/kidsstory/
 2. JDK 17
 3. Android SDK 34
 
-### API 金鑰設定
+### API 金鑰設定（必須，用於 AI 功能）
+
+**⚠️ 重要：** 要使用 AI 故事生成功能，必須先設定 Gemini API Key。
+
 在 `local.properties` 中新增：
 ```properties
 GEMINI_API_KEY=your_gemini_api_key_here
 ELEVENLABS_API_KEY=your_elevenlabs_api_key_here
 ```
+
+**詳細設定指南**：請參閱 [README_API_SETUP.md](./README_API_SETUP.md)
+
+**快速開始**：
+1. 前往 https://makersuite.google.com/app/apikey
+2. 取得免費 API Key
+3. 複製 `local.properties.example` 為 `local.properties`
+4. 填入你的 API Key
+5. Rebuild Project
 
 ### 建構與執行
 ```bash
