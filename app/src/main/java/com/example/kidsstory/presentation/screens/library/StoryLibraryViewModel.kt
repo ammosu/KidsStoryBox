@@ -2,9 +2,11 @@ package com.example.kidsstory.presentation.screens.library
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.kidsstory.domain.model.Language
 import com.example.kidsstory.domain.model.Story
 import com.example.kidsstory.domain.model.StoryCategory
-import com.example.kidsstory.domain.repository.StoryRepository
+import com.example.kidsstory.domain.usecases.GetAllStoriesUseCase
+import com.example.kidsstory.domain.usecases.InitializePresetStoriesUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,7 +22,8 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class StoryLibraryViewModel @Inject constructor(
-    private val storyRepository: StoryRepository
+    private val getAllStoriesUseCase: GetAllStoriesUseCase,
+    private val initializePresetStoriesUseCase: InitializePresetStoriesUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(StoryLibraryUiState())
@@ -36,10 +39,10 @@ class StoryLibraryViewModel @Inject constructor(
 
             try {
                 withContext(Dispatchers.IO) {
-                    storyRepository.initializePresetStories()
+                    initializePresetStoriesUseCase()
                 }
 
-                storyRepository.getAllStories().collect { stories ->
+                getAllStoriesUseCase().collect { stories ->
                     _uiState.update {
                         it.copy(
                             stories = stories,
@@ -69,6 +72,10 @@ class StoryLibraryViewModel @Inject constructor(
         }
     }
 
+    fun selectLanguage(language: Language) {
+        _uiState.update { it.copy(language = language) }
+    }
+
     private fun filterStories(stories: List<Story>, category: StoryCategory?): List<Story> {
         return if (category == null) {
             stories
@@ -86,5 +93,6 @@ data class StoryLibraryUiState(
     val filteredStories: List<Story> = emptyList(),
     val selectedCategory: StoryCategory? = null,
     val isLoading: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    val language: Language = Language.CHINESE
 )

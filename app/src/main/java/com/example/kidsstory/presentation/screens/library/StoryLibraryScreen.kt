@@ -18,6 +18,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.kidsstory.domain.model.Language
 import com.example.kidsstory.domain.model.Story
 import com.example.kidsstory.domain.model.StoryCategory
 
@@ -55,8 +56,14 @@ fun StoryLibraryScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
+            LanguageFilterRow(
+                selectedLanguage = uiState.language,
+                onLanguageSelect = { viewModel.selectLanguage(it) }
+            )
+
             // 分類篩選
             CategoryFilterRow(
+                language = uiState.language,
                 selectedCategory = uiState.selectedCategory,
                 onCategorySelect = { viewModel.selectCategory(it) }
             )
@@ -103,6 +110,7 @@ fun StoryLibraryScreen(
                         items(uiState.filteredStories) { story ->
                             StoryCard(
                                 story = story,
+                                language = uiState.language,
                                 onClick = { onStoryClick(story.id) }
                             )
                         }
@@ -115,6 +123,7 @@ fun StoryLibraryScreen(
 
 @Composable
 fun CategoryFilterRow(
+    language: Language,
     selectedCategory: StoryCategory?,
     onCategorySelect: (StoryCategory?) -> Unit
 ) {
@@ -125,28 +134,69 @@ fun CategoryFilterRow(
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         // 全部按鈕
+        val allLabel = if (language == Language.ENGLISH) "All" else "全部"
         FilterChip(
             selected = selectedCategory == null,
             onClick = { onCategorySelect(null) },
-            label = { Text("全部") }
+            label = { Text(allLabel) }
         )
 
         // 各分類按鈕
         StoryCategory.values().forEach { category ->
+            val label = if (language == Language.ENGLISH) {
+                category.displayNameEn
+            } else {
+                category.displayNameZh
+            }
             FilterChip(
                 selected = selectedCategory == category,
                 onClick = { onCategorySelect(category) },
-                label = { Text(category.displayNameZh) }
+                label = { Text(label) }
             )
         }
     }
 }
 
 @Composable
+fun LanguageFilterRow(
+    selectedLanguage: Language,
+    onLanguageSelect: (Language) -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        FilterChip(
+            selected = selectedLanguage == Language.CHINESE,
+            onClick = { onLanguageSelect(Language.CHINESE) },
+            label = { Text("中文") }
+        )
+        FilterChip(
+            selected = selectedLanguage == Language.ENGLISH,
+            onClick = { onLanguageSelect(Language.ENGLISH) },
+            label = { Text("English") }
+        )
+    }
+}
+
+@Composable
 fun StoryCard(
     story: Story,
+    language: Language,
     onClick: () -> Unit
 ) {
+    val title = when (language) {
+        Language.CHINESE -> story.title.ifBlank { story.titleEn }
+        Language.ENGLISH -> story.titleEn.ifBlank { story.title }
+    }
+    val categoryLabel = if (language == Language.ENGLISH) {
+        story.category.displayNameEn
+    } else {
+        story.category.displayNameZh
+    }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -174,7 +224,7 @@ fun StoryCard(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = story.category.displayNameZh,
+                            text = categoryLabel,
                             style = MaterialTheme.typography.headlineMedium,
                             color = MaterialTheme.colorScheme.onPrimaryContainer
                         )
@@ -187,7 +237,7 @@ fun StoryCard(
                 modifier = Modifier.padding(12.dp)
             ) {
                 Text(
-                    text = story.title,
+                    text = title,
                     style = MaterialTheme.typography.titleMedium,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis

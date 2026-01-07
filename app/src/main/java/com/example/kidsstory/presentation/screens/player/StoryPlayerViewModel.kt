@@ -5,7 +5,8 @@ import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import com.example.kidsstory.domain.model.Language
 import com.example.kidsstory.domain.model.Story
-import com.example.kidsstory.domain.repository.StoryRepository
+import com.example.kidsstory.domain.usecases.GetStoryByIdUseCase
+import com.example.kidsstory.domain.usecases.UpdateLastPlayedAtUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.Locale
@@ -24,7 +25,8 @@ import androidx.lifecycle.viewModelScope
 @HiltViewModel
 class StoryPlayerViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val storyRepository: StoryRepository
+    private val getStoryByIdUseCase: GetStoryByIdUseCase,
+    private val updateLastPlayedAtUseCase: UpdateLastPlayedAtUseCase
 ) : ViewModel(), TextToSpeech.OnInitListener {
 
     private val _uiState = MutableStateFlow(StoryPlayerUiState())
@@ -69,7 +71,7 @@ class StoryPlayerViewModel @Inject constructor(
             stopPlaybackInternal()
             _uiState.update { it.copy(isLoading = true, error = null) }
 
-            val story = storyRepository.getStoryById(storyId)
+            val story = getStoryByIdUseCase(storyId)
             if (story == null) {
                 _uiState.update {
                     it.copy(isLoading = false, error = "找不到故事")
@@ -139,7 +141,7 @@ class StoryPlayerViewModel @Inject constructor(
     private fun startPlayback() {
         val story = _uiState.value.story ?: return
         viewModelScope.launch {
-            storyRepository.updateLastPlayedAt(story.id, System.currentTimeMillis())
+            updateLastPlayedAtUseCase(story.id, System.currentTimeMillis())
         }
         _uiState.update { it.copy(isPlaying = true, ttsError = null) }
         playCurrentSegmentInternal()
