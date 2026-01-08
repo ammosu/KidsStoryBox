@@ -4,7 +4,7 @@
   "titleEn": "Little Rabbit Finds Friends",
   "category": "FRIENDSHIP",
   "ageRange": "3-6",
-  "coverImage": "asset://illustrations/rabbit_cover.jpg",
+  "coverImage": "images/story_001_cover.png",
   "segments": [
     {
       "sequenceNumber": 1,

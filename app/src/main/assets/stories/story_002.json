@@ -4,7 +4,7 @@
   "titleEn": "The Brave Little Bear",
   "category": "ADVENTURE",
   "ageRange": "3-6",
-  "coverImage": "asset://illustrations/bear_cover.jpg",
+  "coverImage": "images/story_002_cover.png",
   "segments": [
     {
       "sequenceNumber": 1,

@@ -1,7 +1,10 @@
 package com.example.kidsstory.presentation.screens.library
 
+import android.graphics.BitmapFactory
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import java.io.File
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -15,20 +18,22 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import coil.compose.AsyncImage
 import com.example.kidsstory.domain.model.Language
 import com.example.kidsstory.domain.model.Story
 import com.example.kidsstory.domain.model.StoryCategory
-import java.io.File
 import kotlin.math.max
 
 /**
@@ -287,6 +292,7 @@ fun StoryCard(
     language: Language,
     onClick: () -> Unit
 ) {
+    val context = LocalContext.current
     val minutes = max(1, story.duration / 60)
     val title = when (language) {
         Language.CHINESE -> story.title.ifBlank { story.titleEn }
@@ -319,6 +325,9 @@ fun StoryCard(
         )
     )
 
+    val coverImageBitmap = loadAssetImage(story.coverImage)
+    val hasValidCoverImage = coverImageBitmap != null
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -337,21 +346,14 @@ fun StoryCard(
                 contentAlignment = Alignment.Center
             ) {
                 // 如果有封面圖片，顯示圖片；否則顯示漸變背景
-                if (story.coverImage.isNotBlank() && File(story.coverImage).exists()) {
-                    AsyncImage(
-                        model = File(story.coverImage),
+                if (hasValidCoverImage && coverImageBitmap != null) {
+                    Image(
+                        bitmap = coverImageBitmap,
                         contentDescription = title,
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop
                     )
-                    // 在圖片上疊加半透明遮罩，讓文字更清晰
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(Color.Black.copy(alpha = 0.3f))
-                    )
                 } else {
-                    // 沒有圖片時使用漸變背景
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
@@ -428,5 +430,26 @@ fun StoryMetaPill(text: String) {
             style = MaterialTheme.typography.labelSmall,
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
         )
+    }
+}
+
+@Composable
+private fun loadAssetImage(assetPath: String): ImageBitmap? {
+    val context = LocalContext.current
+    return remember(assetPath) {
+        var result: ImageBitmap? = null
+        try {
+            val file = if (assetPath.startsWith("/")) {
+                File(assetPath)
+            } else {
+                File(context.filesDir, assetPath)
+            }
+            if (file.exists()) {
+                result = BitmapFactory.decodeFile(file.absolutePath)?.asImageBitmap()
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        result
     }
 }
