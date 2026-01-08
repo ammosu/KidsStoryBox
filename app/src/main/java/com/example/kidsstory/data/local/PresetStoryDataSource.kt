@@ -4,11 +4,13 @@ import android.content.Context
 import com.example.kidsstory.data.local.model.StoryJson
 import com.google.gson.Gson
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.io.File
+import java.io.FileOutputStream
 import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * 預設故事資料源 - 從 assets 讀取 JSON 檔案
+ * 預設故事資料源 - 從 assets 讀取 JSON 檔案和圖片
  */
 @Singleton
 class PresetStoryDataSource @Inject constructor(
@@ -33,7 +35,14 @@ class PresetStoryDataSource @Inject constructor(
                             .bufferedReader()
                             .use { it.readText() }
 
-                        val story = gson.fromJson(jsonString, StoryJson::class.java)
+                        var story = gson.fromJson(jsonString, StoryJson::class.java)
+
+                        // 嘗試載入封面圖片
+                        val coverImagePath = loadCoverImage(story.id)
+                        if (coverImagePath != null) {
+                            story = story.copy(coverImage = coverImagePath)
+                        }
+
                         stories.add(story)
                     } catch (e: Exception) {
                         // 記錄錯誤但繼續載入其他故事
@@ -46,6 +55,49 @@ class PresetStoryDataSource @Inject constructor(
         }
 
         return stories
+    }
+
+    /**
+     * 從 assets 載入封面圖片並複製到應用私有目錄
+     */
+    private fun loadCoverImage(storyId: String): String? {
+        return try {
+            val assetPath = "images/${storyId}_cover.png"
+
+            // 檢查 assets 中是否存在該圖片
+            val assetsList = context.assets.list("images") ?: emptyArray()
+            val coverFileName = "${storyId}_cover.png"
+
+            if (!assetsList.contains(coverFileName)) {
+                return null
+            }
+
+            // 創建目標目錄
+            val imagesDir = File(context.filesDir, "preset_images")
+            if (!imagesDir.exists()) {
+                imagesDir.mkdirs()
+            }
+
+            // 目標檔案
+            val targetFile = File(imagesDir, coverFileName)
+
+            // 如果檔案已存在，直接返回路徑
+            if (targetFile.exists()) {
+                return targetFile.absolutePath
+            }
+
+            // 從 assets 複製圖片到私有目錄
+            context.assets.open(assetPath).use { inputStream ->
+                FileOutputStream(targetFile).use { outputStream ->
+                    inputStream.copyTo(outputStream)
+                }
+            }
+
+            targetFile.absolutePath
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
     }
 
     /**

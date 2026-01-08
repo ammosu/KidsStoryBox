@@ -20,12 +20,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
 import com.example.kidsstory.domain.model.Language
 import com.example.kidsstory.domain.model.Story
 import com.example.kidsstory.domain.model.StoryCategory
+import java.io.File
 import kotlin.math.max
 
 /**
@@ -325,7 +328,7 @@ fun StoryCard(
         shape = RoundedCornerShape(16.dp)
     ) {
         Column {
-            // 封面圖片佔位符
+            // 封面圖片或漸變背景
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -333,39 +336,58 @@ fun StoryCard(
                     .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)),
                 contentAlignment = Alignment.Center
             ) {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = Color.Transparent
-                ) {
+                // 如果有封面圖片，顯示圖片；否則顯示漸變背景
+                if (story.coverImage.isNotBlank() && File(story.coverImage).exists()) {
+                    AsyncImage(
+                        model = File(story.coverImage),
+                        contentDescription = title,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                    // 在圖片上疊加半透明遮罩，讓文字更清晰
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color.Black.copy(alpha = 0.3f))
+                    )
+                } else {
+                    // 沒有圖片時使用漸變背景
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
                             .background(headerGradient)
+                    )
+                }
+
+                // 標籤和分類文字覆蓋在上層
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(12.dp),
+                    verticalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Surface(
+                        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
+                        contentColor = MaterialTheme.colorScheme.onSurface,
+                        shape = RoundedCornerShape(999.dp)
                     ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(12.dp),
-                            verticalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Surface(
-                                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
-                                contentColor = MaterialTheme.colorScheme.onSurface,
-                                shape = RoundedCornerShape(999.dp)
-                            ) {
-                                Text(
-                                    text = badgeLabel,
-                                    style = MaterialTheme.typography.labelSmall,
-                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
-                                )
-                            }
-                            Text(
-                                text = categoryLabel,
-                                style = MaterialTheme.typography.headlineSmall,
-                                color = MaterialTheme.colorScheme.onPrimary
-                            )
-                        }
+                        Text(
+                            text = badgeLabel,
+                            style = MaterialTheme.typography.labelSmall,
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                        )
                     }
+                    Text(
+                        text = categoryLabel,
+                        style = MaterialTheme.typography.headlineSmall,
+                        color = Color.White,  // 確保在圖片上也清晰可見
+                        modifier = Modifier
+                            .background(
+                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                    )
                 }
             }
 

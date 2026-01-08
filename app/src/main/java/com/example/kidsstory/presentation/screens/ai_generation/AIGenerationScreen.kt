@@ -546,7 +546,7 @@ fun AIGenerationScreen(
                             )
 
                             Text(
-                                text = if (isEnglish) {
+                                text = uiState.generatingStep ?: if (isEnglish) {
                                     "✨ Creating your magical story..."
                                 } else {
                                     "✨ 正在創作你的魔法故事..."
@@ -559,9 +559,9 @@ fun AIGenerationScreen(
 
                             Text(
                                 text = if (isEnglish) {
-                                    "This usually takes 10-30 seconds\nPlease wait patiently ⏰"
+                                    "This usually takes 20-60 seconds\nStory + Beautiful cover image ⏰"
                                 } else {
-                                    "這通常需要 10-30 秒\n請耐心等待 ⏰"
+                                    "這通常需要 20-60 秒\n故事 + 精美封面圖 ⏰"
                                 },
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
