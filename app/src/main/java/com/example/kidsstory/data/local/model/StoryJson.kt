@@ -45,5 +45,8 @@ data class StorySegmentJson(
     val characterRole: String,
 
     @SerializedName("duration")
-    val duration: Int
+    val duration: Int,
+
+    @SerializedName("image")
+    val image: String? = null
 )

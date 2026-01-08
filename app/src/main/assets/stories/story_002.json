@@ -11,56 +11,64 @@
       "contentZh": "小熊住在一個美麗的山谷裡。",
       "contentEn": "Little bear lived in a beautiful valley.",
       "characterRole": "NARRATOR",
-      "duration": 3
+      "duration": 3,
+      "image": "images/story_002_seg1.png"
     },
     {
       "sequenceNumber": 2,
       "contentZh": "有一天，小熊聽說山頂上有一朵神奇的花。",
       "contentEn": "One day, the bear heard about a magical flower on the mountain top.",
       "characterRole": "NARRATOR",
-      "duration": 4
+      "duration": 4,
+      "image": "images/story_002_seg2.png"
     },
     {
       "sequenceNumber": 3,
       "contentZh": "我要去找那朵花！雖然路很遠，但我不怕！",
       "contentEn": "I'll find that flower! The path is long, but I'm not afraid!",
       "characterRole": "PROTAGONIST",
-      "duration": 4
+      "duration": 4,
+      "image": "images/story_002_seg3.png"
     },
     {
       "sequenceNumber": 4,
       "contentZh": "小熊開始爬山，路上遇到了很多困難。",
       "contentEn": "The bear started climbing and faced many challenges along the way.",
       "characterRole": "NARRATOR",
-      "duration": 4
+      "duration": 4,
+      "image": "images/story_002_seg4.png"
     },
     {
       "sequenceNumber": 5,
       "contentZh": "小熊，山路太難走了，你還是回家吧！",
       "contentEn": "Little bear, the mountain path is too difficult, you should go home!",
       "characterRole": "ANIMAL",
-      "duration": 4
+      "duration": 4,
+      "image": "images/story_002_seg5.png"
     },
     {
       "sequenceNumber": 6,
       "contentZh": "不，我不放棄！我一定要找到那朵花！",
       "contentEn": "No, I won't give up! I must find that flower!",
       "characterRole": "PROTAGONIST",
-      "duration": 4
+      "duration": 4,
+      "image": "images/story_002_seg6.png"
     },
     {
       "sequenceNumber": 7,
       "contentZh": "經過努力，小熊終於爬到了山頂，找到了那朵美麗的花。",
       "contentEn": "After hard work, the bear finally reached the top and found the beautiful flower.",
       "characterRole": "NARRATOR",
-      "duration": 5
+      "duration": 5,
+      "image": "images/story_002_seg7.png"
     },
     {
       "sequenceNumber": 8,
       "contentZh": "小熊學到了：只要勇敢堅持，就能實現夢想。",
       "contentEn": "The bear learned that with courage and persistence, dreams can come true.",
       "characterRole": "NARRATOR",
-      "duration": 5
+      "duration": 5,
+      "image": "images/story_002_seg8.png"
     }
   ]
 }

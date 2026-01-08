@@ -247,3 +247,49 @@ private fun loadAssetImage(assetPath: String): ImageBitmap? {
 **Fix Steps**:
 1. Update `StoryLibraryScreen.kt` to load images from file paths
 2. Uninstall and reinstall the app to clear old database entries
+
+### Preset Story Segment Images Not Displaying
+
+**Problem**: Segment images for preset stories show gradient background instead of actual images.
+
+**Root Cause**: In `StoryRepositoryImpl.kt:initializePresetStories()`, segment image paths were not properly loaded and saved to the database:
+
+```kotlin
+// WRONG - imagePath is always null
+val segments = storyJson.segments.map { it.toEntity(storyJson.id, null) }
+storySegmentDao.insertSegments(segments)
+```
+
+This resulted in:
+1. Database `imageUrls` column being `null` for all segments
+2. `StorySegment.image` field being `null` in domain layer
+3. UI showing gradient background instead of images
+
+**Solution**: Load images from assets and save absolute paths to database:
+
+```kotlin
+// CORRECT - load and save image paths
+val segments = storyJson.segments.map { segment ->
+    val imagePath = segment.image?.let {
+        presetStoryDataSource.loadSegmentImage(storyJson.id, it)
+    }
+    segment.toEntity(storyJson.id, imagePath)
+}
+storySegmentDao.insertSegments(segments)
+```
+
+**Data Flow**:
+1. `PresetStoryDataSource.loadSegmentImage()` copies image from assets to internal storage
+2. Returns absolute path: `/data/user/0/com.example.kidsstory/files/preset_images/story_001_seg1.png`
+3. Path is saved to Room database `story_segments.image_urls` column
+4. Domain model `StorySegment.image` contains the path
+5. UI uses `BitmapFactory.decodeFile()` to load image
+
+**Why It Failed Previously**:
+1. `initializePresetStories()` passed `null` for all segment image paths
+2. Database had no image URLs, so domain layer had `null` images
+3. UI checked `segment?.image`, found null, showed gradient
+
+**Fix Steps**:
+1. Update `StoryRepositoryImpl.initializePresetStories()` to load segment images
+2. Uninstall and reinstall the app to reinitialize database with correct paths

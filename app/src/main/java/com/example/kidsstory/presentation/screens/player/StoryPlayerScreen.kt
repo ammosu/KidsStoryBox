@@ -1,42 +1,51 @@
 package com.example.kidsstory.presentation.screens.player
 
+import android.graphics.BitmapFactory
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.SkipNext
-import androidx.compose.material.icons.filled.SkipPrevious
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Slider
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -47,17 +56,22 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.kidsstory.domain.model.Language
+import java.io.File
 import kotlin.math.max
 
-/**
- * 故事播放器畫面
- * 播放多角色語音並顯示字幕和圖片
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StoryPlayerScreen(
@@ -66,8 +80,10 @@ fun StoryPlayerScreen(
     viewModel: StoryPlayerViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    var showSettings by remember { mutableStateOf(false) }
     var showSegments by remember { mutableStateOf(false) }
     val isEnglish = uiState.language == Language.ENGLISH
+    val context = LocalContext.current
 
     LaunchedEffect(storyId) {
         viewModel.loadStory(storyId)
@@ -79,38 +95,11 @@ fun StoryPlayerScreen(
         }
     }
 
-    Scaffold(
-        topBar = {
-            val appBarTitle = uiState.story?.let { story ->
-                if (uiState.language == Language.ENGLISH) {
-                    story.titleEn.ifBlank { story.title }
-                } else {
-                    story.title
-                }
-            } ?: if (uiState.language == Language.ENGLISH) {
-                "Story Player"
-            } else {
-                "故事播放"
-            }
-            TopAppBar(
-                title = { Text(appBarTitle) },
-                navigationIcon = {
-                    IconButton(onClick = {
-                        viewModel.stopPlayback()
-                        onNavigateBack()
-                    }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "返回")
-                    }
-                }
-            )
-        }
-    ) { padding ->
+    Box(modifier = Modifier.fillMaxSize()) {
         when {
             uiState.isLoading -> {
                 Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(padding),
+                    modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
                     CircularProgressIndicator()
@@ -119,16 +108,22 @@ fun StoryPlayerScreen(
 
             uiState.error != null -> {
                 Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(padding),
+                    modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = uiState.error
-                            ?: if (isEnglish) "Something went wrong" else "發生錯誤",
-                        color = MaterialTheme.colorScheme.error
-                    )
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = uiState.error
+                                ?: if (isEnglish) "Something went wrong" else "發生錯誤",
+                            color = MaterialTheme.colorScheme.error
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = if (isEnglish) "Tap to go back" else "點擊返回",
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.clickable { onNavigateBack() }
+                        )
+                    }
                 }
             }
 
@@ -136,10 +131,10 @@ fun StoryPlayerScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(padding),
+                        .clickable { onNavigateBack() },
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(if (isEnglish) "Story not found" else "找不到故事內容")
+                    Text(if (isEnglish) "Story not found\nTap to go back" else "找不到故事內容\n點擊返回")
                 }
             }
 
@@ -152,204 +147,221 @@ fun StoryPlayerScreen(
                 }.ifBlank {
                     segment?.contentZh?.ifBlank { segment?.contentEn ?: "" } ?: ""
                 }
-                val emptyContentLabel = if (isEnglish) "No content yet" else "尚無內容"
-                val minutes = max(1, (story?.duration ?: 0) / 60)
-                val categoryLabel = if (isEnglish) {
-                    story?.category?.displayNameEn ?: ""
-                } else {
-                    story?.category?.displayNameZh ?: ""
-                }
-                val ageLabel = if (isEnglish) {
-                    "${story?.ageRange ?: ""} yrs"
-                } else {
-                    "${story?.ageRange ?: ""} 歲"
-                }
-                val durationLabel = if (isEnglish) {
-                    "$minutes min"
-                } else {
-                    "約 $minutes 分鐘"
-                }
-                val segmentLabel = if (isEnglish) {
-                    "Segment ${uiState.currentSegmentIndex + 1}"
-                } else {
-                    "第 ${uiState.currentSegmentIndex + 1} 段"
-                }
-                val segmentListLabel = if (isEnglish) "Segments" else "段落列表"
-                val settingsLabel = if (isEnglish) "Playback settings" else "播放設定"
-                val speedLabel = if (isEnglish) "Speed" else "語速"
-                val pitchLabel = if (isEnglish) "Pitch" else "音調"
 
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(padding)
-                        .padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        FilterChip(
-                            selected = uiState.language == Language.CHINESE,
-                            onClick = { viewModel.selectLanguage(Language.CHINESE) },
-                            label = { Text("中文") }
-                        )
-                        FilterChip(
-                            selected = uiState.language == Language.ENGLISH,
-                            onClick = { viewModel.selectLanguage(Language.ENGLISH) },
-                            label = { Text("English") }
-                        )
-                    }
+                val segmentImage = segment?.image
 
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        if (categoryLabel.isNotBlank()) {
-                            StoryMetaPill(text = categoryLabel)
-                        }
-                        if (story?.ageRange?.isNotBlank() == true) {
-                            StoryMetaPill(text = ageLabel)
-                        }
-                        StoryMetaPill(text = durationLabel)
-                    }
-
-                    Text(
-                        text = segmentLabel,
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(16.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = segmentText.ifBlank { emptyContentLabel },
-                                style = MaterialTheme.typography.headlineSmall,
-                                textAlign = TextAlign.Center
-                            )
-                        }
-                    }
-
-                    if (uiState.segmentCount > 0) {
-                        val progress = (uiState.currentSegmentIndex + 1).toFloat() /
-                            uiState.segmentCount.toFloat()
-                        LinearProgressIndicator(
-                            progress = progress.coerceIn(0f, 1f),
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "${uiState.currentSegmentIndex + 1} / ${uiState.segmentCount}",
-                                style = MaterialTheme.typography.bodySmall
-                            )
-                            TextButton(onClick = { showSegments = true }) {
-                                Text(segmentListLabel)
+                Box(modifier = Modifier.fillMaxSize()) {
+                    AnimatedContent(
+                        targetState = segmentImage,
+                        transitionSpec = { fadeIn() togetherWith fadeOut() },
+                        label = "segment_image"
+                    ) { imagePath ->
+                        if (imagePath != null) {
+                            val bitmap = remember(imagePath) {
+                                try {
+                                    val file = File(imagePath)
+                                    if (file.exists()) {
+                                        BitmapFactory.decodeFile(file.absolutePath)?.asImageBitmap()
+                                    } else null
+                                } catch (e: Exception) {
+                                    null
+                                }
+                            }
+                            if (bitmap != null) {
+                                Image(
+                                    bitmap = bitmap,
+                                    contentDescription = null,
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentScale = ContentScale.Crop
+                                )
+                            } else {
+                                GradientBackground()
                             }
                         }
                     }
 
-                    Text(
-                        text = settingsLabel,
-                        style = MaterialTheme.typography.titleSmall
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(
+                                Brush.verticalGradient(
+                                    colors = listOf(
+                                        Color.Transparent,
+                                        Color.Black.copy(alpha = 0.7f)
+                                    ),
+                                    startY = 0f,
+                                    endY = Float.POSITIVE_INFINITY
+                                )
+                            )
                     )
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant
+
+                    TopAppBar(
+                        title = {
+                            Text(
+                                text = if (isEnglish) story?.titleEn ?: "" else story?.title ?: "",
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        },
+                        navigationIcon = {
+                            IconButton(onClick = {
+                                viewModel.stopPlayback()
+                                onNavigateBack()
+                            }) {
+                                Icon(
+                                    Icons.Default.KeyboardArrowDown,
+                                    contentDescription = if (isEnglish) "Close" else "關閉"
+                                )
+                            }
+                        },
+                        actions = {
+                            IconButton(onClick = { showSettings = true }) {
+                                Icon(
+                                    Icons.Default.Settings,
+                                    contentDescription = if (isEnglish) "Settings" else "設定"
+                                )
+                            }
+                        },
+                        colors = TopAppBarDefaults.topAppBarColors(
+                            containerColor = Color.Transparent,
+                            titleContentColor = Color.White,
+                            navigationIconContentColor = Color.White,
+                            actionIconContentColor = Color.White
                         )
+                    )
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(
+                                top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding() + 48.dp
+                            )
+                            .padding(horizontal = 16.dp),
+                        verticalArrangement = Arrangement.SpaceBetween
                     ) {
+                        Spacer(modifier = Modifier.weight(1f))
+
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(12.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                                .padding(bottom = 16.dp)
                         ) {
-                            Text(
-                                text = "$speedLabel ${String.format("%.2fx", uiState.speechRate)}",
-                                style = MaterialTheme.typography.bodySmall
-                            )
-                            Slider(
-                                value = uiState.speechRate,
-                                onValueChange = { viewModel.updateSpeechRate(it) },
-                                valueRange = 0.5f..1.5f
-                            )
-                            Text(
-                                text = "$pitchLabel ${String.format("%.2fx", uiState.speechPitch)}",
-                                style = MaterialTheme.typography.bodySmall
-                            )
-                            Slider(
-                                value = uiState.speechPitch,
-                                onValueChange = { viewModel.updateSpeechPitch(it) },
-                                valueRange = 0.5f..1.5f
-                            )
+                            if (uiState.segmentCount > 0) {
+                                LinearProgressIndicator(
+                                    progress = {
+                                        ((uiState.currentSegmentIndex + 1).toFloat() /
+                                                uiState.segmentCount.toFloat()).coerceIn(0f, 1f)
+                                    },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(4.dp)
+                                        .clip(RoundedCornerShape(2.dp)),
+                                    color = Color.White.copy(alpha = 0.8f),
+                                    trackColor = Color.White.copy(alpha = 0.3f)
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                            }
+
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = Color.White.copy(alpha = 0.95f)
+                                ),
+                                shape = RoundedCornerShape(16.dp)
+                            ) {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(20.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    Text(
+                                        text = segmentText.ifBlank {
+                                            if (isEnglish) "No content yet" else "尚無內容"
+                                        },
+                                        style = MaterialTheme.typography.headlineSmall.copy(
+                                            fontWeight = FontWeight.Medium,
+                                            lineHeight = 32.sp
+                                        ),
+                                        textAlign = TextAlign.Center,
+                                        color = Color(0xFF1A1A1A)
+                                    )
+
+                                    Spacer(modifier = Modifier.height(16.dp))
+
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.Center,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        PlaybackButton(
+                                            icon = Icons.Default.PlayArrow,
+                                            contentDescription = if (uiState.isPlaying) {
+                                                if (isEnglish) "Pause" else "暫停"
+                                            } else {
+                                                if (isEnglish) "Play" else "播放"
+                                            },
+                                            onClick = { viewModel.togglePlayPause() },
+                                            isPlaying = uiState.isPlaying
+                                        )
+                                    }
+                                }
+                            }
                         }
                     }
 
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceEvenly,
-                        verticalAlignment = Alignment.CenterVertically
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .align(Alignment.BottomCenter)
+                            .padding(
+                                bottom = WindowInsets.navigationBars.asPaddingValues()
+                                    .calculateBottomPadding() + 80.dp
+                            )
+                            .padding(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        IconButton(
-                            onClick = { viewModel.previousSegment() },
-                            enabled = uiState.currentSegmentIndex > 0
+                        Surface(
+                            color = Color.Black.copy(alpha = 0.5f),
+                            shape = RoundedCornerShape(20.dp)
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.SkipPrevious,
-                                contentDescription = "上一段"
-                            )
-                        }
-
-                        IconButton(
-                            onClick = { viewModel.togglePlayPause() },
-                            enabled = uiState.segmentCount > 0,
-                            modifier = Modifier.size(64.dp)
-                        ) {
-                            Icon(
-                                imageVector = if (uiState.isPlaying) {
-                                    Icons.Default.Pause
+                            Text(
+                                text = if (isEnglish) {
+                                    "${uiState.currentSegmentIndex + 1} / ${uiState.segmentCount}"
                                 } else {
-                                    Icons.Default.PlayArrow
+                                    "${uiState.currentSegmentIndex + 1} / ${uiState.segmentCount}"
                                 },
-                                contentDescription = if (uiState.isPlaying) "暫停" else "播放",
-                                modifier = Modifier.size(48.dp)
+                                style = MaterialTheme.typography.labelMedium,
+                                color = Color.White,
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
                             )
                         }
 
-                        IconButton(
-                            onClick = { viewModel.nextSegment() },
-                            enabled = uiState.currentSegmentIndex < uiState.segmentCount - 1
+                        Surface(
+                            color = Color.Black.copy(alpha = 0.5f),
+                            shape = RoundedCornerShape(20.dp)
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.SkipNext,
-                                contentDescription = "下一段"
+                            Text(
+                                text = if (isEnglish) "Segments" else "段落",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = Color.White,
+                                modifier = Modifier
+                                    .clickable { showSegments = true }
+                                    .padding(horizontal = 12.dp, vertical = 6.dp)
                             )
                         }
                     }
+                }
 
-                    if (uiState.ttsError != null) {
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = uiState.ttsError ?: "",
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                    }
+                if (showSettings) {
+                    SettingsBottomSheet(
+                        isEnglish = isEnglish,
+                        speechRate = uiState.speechRate,
+                        speechPitch = uiState.speechPitch,
+                        onSpeechRateChange = { viewModel.updateSpeechRate(it) },
+                        onSpeechPitchChange = { viewModel.updateSpeechPitch(it) },
+                        onDismiss = { showSettings = false }
+                    )
                 }
 
                 if (showSegments && story != null) {
@@ -360,16 +372,20 @@ fun StoryPlayerScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(horizontal = 16.dp, vertical = 8.dp)
+                                .padding(
+                                    bottom = WindowInsets.navigationBars.asPaddingValues()
+                                        .calculateBottomPadding()
+                                )
                         ) {
                             Text(
-                                text = segmentListLabel,
+                                text = if (isEnglish) "Segments" else "段落列表",
                                 style = MaterialTheme.typography.titleMedium
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             LazyColumn(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .heightIn(max = 360.dp),
+                                    .heightIn(max = 400.dp),
                                 verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 itemsIndexed(story.segments) { index, item ->
@@ -429,16 +445,101 @@ fun StoryPlayerScreen(
 }
 
 @Composable
-fun StoryMetaPill(text: String) {
+fun GradientBackground() {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                Brush.linearGradient(
+                    colors = listOf(
+                        Color(0xFF667eea),
+                        Color(0xFF764ba2),
+                        Color(0xFFf093fb)
+                    )
+                )
+            )
+    )
+}
+
+@Composable
+fun PlaybackButton(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    contentDescription: String,
+    onClick: () -> Unit,
+    isPlaying: Boolean
+) {
     Surface(
-        color = MaterialTheme.colorScheme.secondaryContainer,
-        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
-        shape = RoundedCornerShape(999.dp)
+        modifier = Modifier
+            .size(64.dp)
+            .clickable(onClick = onClick),
+        shape = CircleShape,
+        color = MaterialTheme.colorScheme.primary
     ) {
-        Text(
-            text = text,
-            style = MaterialTheme.typography.labelSmall,
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-        )
+        Box(contentAlignment = Alignment.Center) {
+            Icon(
+                imageVector = icon,
+                contentDescription = contentDescription,
+                modifier = Modifier.size(36.dp),
+                tint = MaterialTheme.colorScheme.onPrimary
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SettingsBottomSheet(
+    isEnglish: Boolean,
+    speechRate: Float,
+    speechPitch: Float,
+    onSpeechRateChange: (Float) -> Unit,
+    onSpeechPitchChange: (Float) -> Unit,
+    onDismiss: () -> Unit
+) {
+    ModalBottomSheet(onDismissRequest = onDismiss) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+                .padding(
+                    bottom = WindowInsets.navigationBars.asPaddingValues()
+                        .calculateBottomPadding()
+                )
+        ) {
+            Text(
+                text = if (isEnglish) "Playback Settings" else "播放設定",
+                style = MaterialTheme.typography.titleLarge
+            )
+            Spacer(modifier = Modifier.height(24.dp))
+
+            val speedLabel = if (isEnglish) "Speed" else "語速"
+            val pitchLabel = if (isEnglish) "Pitch" else "音調"
+
+            Text(
+                text = "$speedLabel: ${String.format("%.2fx", speechRate)}",
+                style = MaterialTheme.typography.bodyLarge
+            )
+            Slider(
+                value = speechRate,
+                onValueChange = onSpeechRateChange,
+                valueRange = 0.5f..1.5f,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = "$pitchLabel: ${String.format("%.2fx", speechPitch)}",
+                style = MaterialTheme.typography.bodyLarge
+            )
+            Slider(
+                value = speechPitch,
+                onValueChange = onSpeechPitchChange,
+                valueRange = 0.5f..1.5f,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+        }
     }
 }

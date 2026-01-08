@@ -146,19 +146,19 @@ class ImageGenerationService @Inject constructor(
     }
 
     /**
-     * 調用圖片生成 API
+     * 調用圖片生成 API (Gradio format)
      */
     private suspend fun callImageGenerationAPI(prompt: String): ByteArray? {
         return try {
             val jsonBody = JSONObject().apply {
                 put("data", JSONArray().apply {
-                    put(prompt)  // prompt
-                    put("1024x1024 ( 1:1 )")  // resolution - 正方形適合封面
-                    put((Math.random() * 1000000).toInt())  // random seed
-                    put(8)  // steps - 快速生成
-                    put(3.0)  // shift
-                    put(true)  // random_seed
-                    put(JSONArray())  // output_gallery
+                    put(prompt)
+                    put("1024x1024 ( 1:1 )")
+                    put((Math.random() * 1000000).toInt())
+                    put(8)
+                    put(3.0)
+                    put(true)
+                    put(JSONArray())
                 })
             }
 
@@ -166,7 +166,7 @@ class ImageGenerationService @Inject constructor(
                 .toRequestBody("application/json".toMediaType())
 
             val request = Request.Builder()
-                .url("$baseUrl/api/generate")
+                .url("$baseUrl/predict")
                 .post(requestBody)
                 .build()
 
@@ -176,17 +176,12 @@ class ImageGenerationService @Inject constructor(
                 val responseBody = response.body?.string()
                 val jsonResponse = JSONObject(responseBody)
 
-                // 解析返回的圖片路徑
-                // 響應格式: {"data": [[{"image": "/path/to/image.png", "caption": null}], "42", 42]}
                 val dataArray = jsonResponse.optJSONArray("data")
                 if (dataArray != null && dataArray.length() > 0) {
-                    val galleryArray = dataArray.optJSONArray(0)
-                    if (galleryArray != null && galleryArray.length() > 0) {
-                        val imageObject = galleryArray.getJSONObject(0)
-                        val imagePath = imageObject.optString("image")
-
+                    val galleryArray = dataArray.getJSONArray(0)
+                    if (galleryArray.length() > 0) {
+                        val imagePath = galleryArray.getString(0)
                         if (imagePath.isNotBlank()) {
-                            // 下載圖片
                             return downloadImage("$baseUrl/file=$imagePath")
                         }
                     }

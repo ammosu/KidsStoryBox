@@ -28,6 +28,7 @@ data class StorySegment(
     val contentEn: String,
     val characterRole: CharacterRole,
     val duration: Int,
+    val image: String? = null,
     val audioPathZh: String? = null,
     val audioPathEn: String? = null
 )

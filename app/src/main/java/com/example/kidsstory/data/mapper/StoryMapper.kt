@@ -30,16 +30,16 @@ fun StoryJson.toEntity(): StoryEntity {
 /**
  * 將 JSON 段落轉換為 Entity
  */
-fun StorySegmentJson.toEntity(storyId: String): StorySegmentEntity {
+fun StorySegmentJson.toEntity(storyId: String, imagePath: String?): StorySegmentEntity {
     return StorySegmentEntity(
         storyId = storyId,
         sequenceNumber = sequenceNumber,
         contentZh = contentZh,
         contentEn = contentEn,
         characterRole = characterRole,
-        audioPathZh = null,  // 預設故事稍後會填入
+        audioPathZh = null,
         audioPathEn = null,
-        imageUrls = null,
+        imageUrls = imagePath,
         duration = duration
     )
 }
@@ -72,6 +72,7 @@ fun StorySegmentEntity.toDomain(): StorySegment {
         contentEn = contentEn,
         characterRole = CharacterRole.fromString(characterRole),
         duration = duration,
+        image = imageUrls,
         audioPathZh = audioPathZh,
         audioPathEn = audioPathEn
     )
@@ -107,7 +108,7 @@ fun StorySegment.toEntity(storyId: String): StorySegmentEntity {
         characterRole = characterRole.name,
         audioPathZh = audioPathZh,
         audioPathEn = audioPathEn,
-        imageUrls = null,
+        imageUrls = image,
         duration = duration
     )
 }

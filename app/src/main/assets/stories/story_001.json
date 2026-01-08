@@ -11,56 +11,64 @@
       "contentZh": "從前，有一隻可愛的小兔子，住在森林裡。",
       "contentEn": "Once upon a time, there was a cute little rabbit living in the forest.",
       "characterRole": "NARRATOR",
-      "duration": 5
+      "duration": 5,
+      "image": "images/story_001_seg1.png"
     },
     {
       "sequenceNumber": 2,
       "contentZh": "小兔子很孤單，它想要找一些朋友。",
       "contentEn": "The little rabbit was lonely and wanted to find some friends.",
       "characterRole": "NARRATOR",
-      "duration": 4
+      "duration": 4,
+      "image": "images/story_001_seg2.png"
     },
     {
       "sequenceNumber": 3,
-      "contentZh": "我要去找朋友！我想和大家一起玩！",
+      "contentZh": "「我要去找朋友！我想和大家一起玩！」",
       "contentEn": "I want to find friends! I want to play with everyone!",
       "characterRole": "PROTAGONIST",
-      "duration": 4
+      "duration": 4,
+      "image": "images/story_001_seg3.png"
     },
     {
       "sequenceNumber": 4,
       "contentZh": "小兔子來到河邊，看見了一隻小鴨子。",
       "contentEn": "The little rabbit came to the river and saw a little duck.",
       "characterRole": "NARRATOR",
-      "duration": 4
+      "duration": 4,
+      "image": "images/story_001_seg4.png"
     },
     {
       "sequenceNumber": 5,
-      "contentZh": "你好！我可以和你一起玩嗎？",
+      "contentZh": "「你好！我可以和你一起玩嗎？」",
       "contentEn": "Hello! Can I play with you?",
       "characterRole": "PROTAGONIST",
-      "duration": 3
+      "duration": 3,
+      "image": "images/story_001_seg5.png"
     },
     {
       "sequenceNumber": 6,
-      "contentZh": "當然可以！我正要去游泳，一起來吧！",
+      "contentZh": "「當然可以！我正要去游泳，一起來吧！」",
       "contentEn": "Of course! I'm going swimming, come along!",
       "characterRole": "ANIMAL",
-      "duration": 4
+      "duration": 4,
+      "image": "images/story_001_seg6.png"
     },
     {
       "sequenceNumber": 7,
       "contentZh": "後來，他們又遇到了松鼠和小鳥，大家都成為了好朋友。",
       "contentEn": "Later, they met a squirrel and a bird, and everyone became good friends.",
       "characterRole": "NARRATOR",
-      "duration": 5
+      "duration": 5,
+      "image": "images/story_001_seg7.png"
     },
     {
       "sequenceNumber": 8,
       "contentZh": "從那天起，小兔子每天都和朋友們快樂地玩耍。",
       "contentEn": "From that day on, the little rabbit played happily with friends every day.",
       "characterRole": "NARRATOR",
-      "duration": 5
+      "duration": 5,
+      "image": "images/story_001_seg8.png"
     }
   ]
 }

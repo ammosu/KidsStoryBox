@@ -2,8 +2,11 @@ package com.example.kidsstory.data.local
 
 import android.content.Context
 import com.example.kidsstory.data.local.model.StoryJson
+import com.example.kidsstory.data.local.model.StorySegmentJson
+import com.example.kidsstory.data.remote.ImageGenerationService
 import com.google.gson.Gson
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.runBlocking
 import java.io.File
 import java.io.FileOutputStream
 import javax.inject.Inject
@@ -15,7 +18,8 @@ import javax.inject.Singleton
 @Singleton
 class PresetStoryDataSource @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val gson: Gson
+    private val gson: Gson,
+    private val imageGenerationService: ImageGenerationService
 ) {
 
     /**
@@ -25,7 +29,6 @@ class PresetStoryDataSource @Inject constructor(
         val stories = mutableListOf<StoryJson>()
 
         try {
-            // 列出 assets/stories 目錄下的所有 JSON 檔案
             val storyFiles = context.assets.list("stories") ?: emptyArray()
 
             storyFiles.forEach { fileName ->
@@ -37,7 +40,6 @@ class PresetStoryDataSource @Inject constructor(
 
                         var story = gson.fromJson(jsonString, StoryJson::class.java)
 
-                        // 嘗試載入封面圖片
                         val coverImagePath = loadCoverImage(story.id)
                         if (coverImagePath != null) {
                             story = story.copy(coverImage = coverImagePath)
@@ -45,7 +47,48 @@ class PresetStoryDataSource @Inject constructor(
 
                         stories.add(story)
                     } catch (e: Exception) {
-                        // 記錄錯誤但繼續載入其他故事
+                        e.printStackTrace()
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
+        return stories
+    }
+
+    /**
+     * 讀取所有預設故事並載入段落圖片
+     */
+    fun loadPresetStoriesWithImages(): List<StoryJson> {
+        val stories = mutableListOf<StoryJson>()
+
+        try {
+            val storyFiles = context.assets.list("stories") ?: emptyArray()
+
+            storyFiles.forEach { fileName ->
+                if (fileName.endsWith(".json")) {
+                    try {
+                        val jsonString = context.assets.open("stories/$fileName")
+                            .bufferedReader()
+                            .use { it.readText() }
+
+                        var story = gson.fromJson(jsonString, StoryJson::class.java)
+
+                        val coverImagePath = loadCoverImage(story.id)
+                        if (coverImagePath != null) {
+                            story = story.copy(coverImage = coverImagePath)
+                        }
+
+                        val segmentsWithImages = story.segments.map { segment ->
+                            val imagePath = segment.image?.let { loadSegmentImage(story.id, it) }
+                            segment.copy(image = imagePath)
+                        }
+                        story = story.copy(segments = segmentsWithImages)
+
+                        stories.add(story)
+                    } catch (e: Exception) {
                         e.printStackTrace()
                     }
                 }
@@ -64,7 +107,6 @@ class PresetStoryDataSource @Inject constructor(
         return try {
             val assetPath = "images/${storyId}_cover.png"
 
-            // 檢查 assets 中是否存在該圖片
             val assetsList = context.assets.list("images") ?: emptyArray()
             val coverFileName = "${storyId}_cover.png"
 
@@ -72,21 +114,55 @@ class PresetStoryDataSource @Inject constructor(
                 return null
             }
 
-            // 創建目標目錄
             val imagesDir = File(context.filesDir, "preset_images")
             if (!imagesDir.exists()) {
                 imagesDir.mkdirs()
             }
 
-            // 目標檔案
             val targetFile = File(imagesDir, coverFileName)
 
-            // 如果檔案已存在，直接返回路徑
             if (targetFile.exists()) {
                 return targetFile.absolutePath
             }
 
-            // 從 assets 複製圖片到私有目錄
+            context.assets.open(assetPath).use { inputStream ->
+                FileOutputStream(targetFile).use { outputStream ->
+                    inputStream.copyTo(outputStream)
+                }
+            }
+
+            targetFile.absolutePath
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
+    /**
+     * 從 assets 載入段落圖片並複製到應用私有目錄
+     */
+    fun loadSegmentImage(storyId: String, segmentImageAsset: String): String? {
+        return try {
+            val assetPath = segmentImageAsset
+
+            val assetsList = context.assets.list("images") ?: emptyArray()
+            val fileName = segmentImageAsset.substringAfterLast("/")
+
+            if (!assetsList.contains(fileName)) {
+                return null
+            }
+
+            val imagesDir = File(context.filesDir, "preset_images")
+            if (!imagesDir.exists()) {
+                imagesDir.mkdirs()
+            }
+
+            val targetFile = File(imagesDir, fileName)
+
+            if (targetFile.exists()) {
+                return targetFile.absolutePath
+            }
+
             context.assets.open(assetPath).use { inputStream ->
                 FileOutputStream(targetFile).use { outputStream ->
                     inputStream.copyTo(outputStream)
@@ -113,6 +189,65 @@ class PresetStoryDataSource @Inject constructor(
         } catch (e: Exception) {
             e.printStackTrace()
             null
+        }
+    }
+
+    /**
+     * 為故事的所有段落生成圖片
+     * @param storyId 故事ID
+     * @param segments 故事段落列表
+     * @param characterRoleMap 段落索引到角色類型的映射
+     * @return 更新後的段落列表（包含生成的圖片路徑）
+     */
+    fun generateAllSegmentImages(
+        storyId: String,
+        segments: List<StorySegmentJson>,
+        characterRoleMap: Map<Int, String>
+    ): List<StorySegmentJson> {
+        return segments.mapIndexed { index, segment ->
+            val imagePath = generateSegmentImageIfNeeded(
+                storyId = storyId,
+                segmentIndex = index,
+                segmentContent = segment.contentZh,
+                characterRole = characterRoleMap[index] ?: "NARRATOR"
+            )
+            segment.copy(image = imagePath)
+        }
+    }
+
+    /**
+     * 為單個段落生成圖片（如果尚未生成）
+     */
+    private fun generateSegmentImageIfNeeded(
+        storyId: String,
+        segmentIndex: Int,
+        segmentContent: String,
+        characterRole: String
+    ): String? {
+        val imageFileName = "${storyId}_seg${segmentIndex + 1}_generated.png"
+        val imagesDir = File(context.filesDir, "ai_generated_images")
+        val targetFile = File(imagesDir, imageFileName)
+
+        if (targetFile.exists()) {
+            return targetFile.absolutePath
+        }
+
+        if (!imagesDir.exists()) {
+            imagesDir.mkdirs()
+        }
+
+        return runBlocking {
+            try {
+                val imagePath = imageGenerationService.generateSegmentImage(
+                    segmentContent = segmentContent,
+                    characterRole = characterRole,
+                    storyTheme = ""
+                )
+                imagePath
+            } catch (e: Exception) {
+                e.printStackTrace()
+                null
+            }
         }
     }
 }

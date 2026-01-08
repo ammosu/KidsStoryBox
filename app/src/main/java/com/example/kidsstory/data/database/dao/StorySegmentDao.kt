@@ -28,6 +28,9 @@ interface StorySegmentDao {
     @Update
     suspend fun updateSegment(segment: StorySegmentEntity)
 
+    @Update
+    suspend fun updateSegments(segments: List<StorySegmentEntity>)
+
     @Query("UPDATE story_segments SET audioPathZh = :audioPath WHERE storyId = :storyId AND sequenceNumber = :sequenceNumber")
     suspend fun updateAudioPathZh(storyId: String, sequenceNumber: Int, audioPath: String)
 

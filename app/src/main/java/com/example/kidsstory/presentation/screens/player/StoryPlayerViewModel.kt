@@ -19,9 +19,6 @@ import kotlinx.coroutines.launch
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 
-/**
- * 故事播放器 ViewModel，整合 Android 系統 TTS
- */
 @HiltViewModel
 class StoryPlayerViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
