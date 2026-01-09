@@ -95,15 +95,28 @@ curl -L -o gradle-wrapper.jar https://raw.githubusercontent.com/gradle/gradle/ma
 ## Critical Implementation Details
 
 ### TTS Integration
-The project has **two TTS implementations**:
-1. **`data/tts/AndroidTTSService.kt`**: Singleton service (currently unused)
-2. **`StoryPlayerViewModel`**: Direct TTS integration (currently active)
+The project uses a **clean architecture approach** for TTS with a dedicated service layer:
 
-The ViewModel implements `TextToSpeech.OnInitListener` and manages TTS lifecycle:
-- Auto-advances to next segment on completion using `UtteranceProgressListener`
+**`data/tts/AndroidTTSService.kt`** - Singleton TTS service:
+- Manages Android TextToSpeech lifecycle and initialization
+- Provides callback interface (`TTSPlaybackListener`) for playback events
+- Exposes `StateFlow<TTSPlaybackState>` for reactive state updates
 - Supports language switching (Locale.TAIWAN / Locale.US)
 - Adjustable speech rate (0.5x-1.5x) and pitch (0.5-1.5)
-- Properly cleans up TTS in `onCleared()`
+- Thread-safe with proper error handling and logging
+
+**`StoryPlayerViewModel`** - Presentation layer:
+- Injects `AndroidTTSService` via Hilt
+- Implements `TTSPlaybackListener` to handle segment completion
+- Auto-advances to next segment when current segment finishes
+- Manages UI state and coordinates with TTS service
+- Properly cleans up listener in `onCleared()`
+
+**Key Architecture Benefits**:
+- Separation of concerns: Data layer handles TTS, Presentation handles UI
+- Single source of truth for TTS state
+- Testable: Service can be mocked in ViewModel tests
+- Reusable: Other ViewModels can use the same TTS service
 
 ### Data Initialization
 On first launch, `KidsStoryApplication` initializes preset stories:
