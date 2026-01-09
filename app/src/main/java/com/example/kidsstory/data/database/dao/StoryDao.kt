@@ -2,6 +2,7 @@ package com.example.kidsstory.data.database.dao
 
 import androidx.room.*
 import com.example.kidsstory.data.database.entity.StoryEntity
+import com.example.kidsstory.data.database.relation.StoryWithSegments
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -13,8 +14,16 @@ interface StoryDao {
     @Query("SELECT * FROM stories ORDER BY lastPlayedAt DESC, createdAt DESC")
     fun getAllStories(): Flow<List<StoryEntity>>
 
+    @Transaction
+    @Query("SELECT * FROM stories ORDER BY lastPlayedAt DESC, createdAt DESC")
+    fun getAllStoriesWithSegments(): Flow<List<StoryWithSegments>>
+
     @Query("SELECT * FROM stories WHERE id = :storyId")
     suspend fun getStoryById(storyId: String): StoryEntity?
+
+    @Transaction
+    @Query("SELECT * FROM stories WHERE id = :storyId")
+    suspend fun getStoryByIdWithSegments(storyId: String): StoryWithSegments?
 
     @Query("SELECT * FROM stories WHERE id = :storyId")
     fun getStoryByIdFlow(storyId: String): Flow<StoryEntity?>
@@ -22,8 +31,16 @@ interface StoryDao {
     @Query("SELECT * FROM stories WHERE category = :category ORDER BY createdAt DESC")
     fun getStoriesByCategory(category: String): Flow<List<StoryEntity>>
 
+    @Transaction
+    @Query("SELECT * FROM stories WHERE category = :category ORDER BY createdAt DESC")
+    fun getStoriesByCategoryWithSegments(category: String): Flow<List<StoryWithSegments>>
+
     @Query("SELECT * FROM stories WHERE isPreset = 1 ORDER BY createdAt ASC")
     fun getPresetStories(): Flow<List<StoryEntity>>
+
+    @Transaction
+    @Query("SELECT * FROM stories WHERE isPreset = 1 ORDER BY createdAt ASC")
+    fun getPresetStoriesWithSegments(): Flow<List<StoryWithSegments>>
 
     @Query("SELECT * FROM stories WHERE isPreset = 1 ORDER BY createdAt ASC")
     suspend fun getPresetStoriesOnce(): List<StoryEntity>
@@ -33,6 +50,10 @@ interface StoryDao {
 
     @Query("SELECT * FROM stories WHERE isPreset = 0 ORDER BY createdAt DESC")
     fun getAIGeneratedStories(): Flow<List<StoryEntity>>
+
+    @Transaction
+    @Query("SELECT * FROM stories WHERE isPreset = 0 ORDER BY createdAt DESC")
+    fun getAIGeneratedStoriesWithSegments(): Flow<List<StoryWithSegments>>
 
     @Query("SELECT * FROM stories WHERE lastPlayedAt IS NOT NULL ORDER BY lastPlayedAt DESC LIMIT :limit")
     suspend fun getRecentlyPlayed(limit: Int): List<StoryEntity>

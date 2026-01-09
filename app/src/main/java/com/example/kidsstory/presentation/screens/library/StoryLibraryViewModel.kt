@@ -76,6 +76,15 @@ class StoryLibraryViewModel @Inject constructor(
         _uiState.update { it.copy(language = language) }
     }
 
+    /**
+     * 重試載入故事
+     * 清除錯誤狀態並重新載入
+     */
+    fun retry() {
+        _uiState.update { it.copy(error = null) }
+        loadStories()
+    }
+
     private fun filterStories(stories: List<Story>, category: StoryCategory?): List<Story> {
         return if (category == null) {
             stories

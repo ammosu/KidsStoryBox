@@ -2,6 +2,7 @@ package com.example.kidsstory.data.mapper
 
 import com.example.kidsstory.data.database.entity.StoryEntity
 import com.example.kidsstory.data.database.entity.StorySegmentEntity
+import com.example.kidsstory.data.database.relation.StoryWithSegments
 import com.example.kidsstory.data.local.model.StoryJson
 import com.example.kidsstory.data.local.model.StorySegmentJson
 import com.example.kidsstory.domain.model.CharacterRole
@@ -60,6 +61,14 @@ fun StoryEntity.toDomain(segments: List<StorySegmentEntity>): Story {
         isDownloaded = isDownloaded,
         createdAt = createdAt
     )
+}
+
+/**
+ * 將 StoryWithSegments 關係轉換為領域模型
+ * 優化後的方法，避免 N+1 查詢問題
+ */
+fun StoryWithSegments.toDomain(): Story {
+    return story.toDomain(segments)
 }
 
 /**

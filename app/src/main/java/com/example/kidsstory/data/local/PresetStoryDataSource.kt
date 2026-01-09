@@ -194,17 +194,18 @@ class PresetStoryDataSource @Inject constructor(
 
     /**
      * 為故事的所有段落生成圖片
+     * 優化：改為 suspend 函數，在 IO dispatcher 中執行圖片生成
      * @param storyId 故事ID
      * @param segments 故事段落列表
      * @param characterRoleMap 段落索引到角色類型的映射
      * @return 更新後的段落列表（包含生成的圖片路徑）
      */
-    fun generateAllSegmentImages(
+    suspend fun generateAllSegmentImages(
         storyId: String,
         segments: List<StorySegmentJson>,
         characterRoleMap: Map<Int, String>
-    ): List<StorySegmentJson> {
-        return segments.mapIndexed { index, segment ->
+    ): List<StorySegmentJson> = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+        segments.mapIndexed { index, segment ->
             val imagePath = generateSegmentImageIfNeeded(
                 storyId = storyId,
                 segmentIndex = index,
@@ -217,8 +218,9 @@ class PresetStoryDataSource @Inject constructor(
 
     /**
      * 為單個段落生成圖片（如果尚未生成）
+     * 優化：改為 suspend 函數，避免使用 runBlocking 阻塞主線程
      */
-    private fun generateSegmentImageIfNeeded(
+    private suspend fun generateSegmentImageIfNeeded(
         storyId: String,
         segmentIndex: Int,
         segmentContent: String,
@@ -236,18 +238,15 @@ class PresetStoryDataSource @Inject constructor(
             imagesDir.mkdirs()
         }
 
-        return runBlocking {
-            try {
-                val imagePath = imageGenerationService.generateSegmentImage(
-                    segmentContent = segmentContent,
-                    characterRole = characterRole,
-                    storyTheme = ""
-                )
-                imagePath
-            } catch (e: Exception) {
-                e.printStackTrace()
-                null
-            }
+        return try {
+            imageGenerationService.generateSegmentImage(
+                segmentContent = segmentContent,
+                characterRole = characterRole,
+                storyTheme = ""
+            )
+        } catch (e: Exception) {
+            android.util.Log.e("PresetStoryDataSource", "Failed to generate segment image", e)
+            null
         }
     }
 }

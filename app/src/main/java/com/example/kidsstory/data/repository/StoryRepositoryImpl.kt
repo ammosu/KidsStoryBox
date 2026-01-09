@@ -3,7 +3,6 @@ package com.example.kidsstory.data.repository
 import com.example.kidsstory.data.database.dao.StoryDao
 import com.example.kidsstory.data.database.dao.StorySegmentDao
 import com.example.kidsstory.data.local.PresetStoryDataSource
-import com.example.kidsstory.data.local.model.StorySegmentJson
 import com.example.kidsstory.data.mapper.toDomain
 import com.example.kidsstory.data.mapper.toEntity
 import com.example.kidsstory.domain.model.Story
@@ -21,51 +20,57 @@ import javax.inject.Singleton
 @Singleton
 class StoryRepositoryImpl @Inject constructor(
     private val storyDao: StoryDao,
-    private val storySegmentDao: StorySegmentDao,
+    private val storySegmentDao: StorySegmentDao,  // 仍需要用於 saveStory 和 initializePresetStories
     private val presetStoryDataSource: PresetStoryDataSource
 ) : StoryRepository {
 
     private val repositoryScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
+    /**
+     * 獲取所有故事
+     * 優化：使用 @Transaction 和 @Relation 避免 N+1 查詢問題
+     */
     override fun getAllStories(): Flow<List<Story>> {
-        return storyDao.getAllStories().map { entities ->
-            entities.map { entity ->
-                val segments = storySegmentDao.getSegmentsByStoryId(entity.id)
-                entity.toDomain(segments)
-            }
+        return storyDao.getAllStoriesWithSegments().map { storiesWithSegments ->
+            storiesWithSegments.map { it.toDomain() }
         }
     }
 
+    /**
+     * 根據 ID 獲取故事
+     * 優化：使用單一查詢獲取故事和段落
+     */
     override suspend fun getStoryById(storyId: String): Story? {
-        val entity = storyDao.getStoryById(storyId) ?: return null
-        val segments = storySegmentDao.getSegmentsByStoryId(storyId)
-        return entity.toDomain(segments)
+        return storyDao.getStoryByIdWithSegments(storyId)?.toDomain()
     }
 
+    /**
+     * 根據分類獲取故事
+     * 優化：使用 @Transaction 和 @Relation 避免 N+1 查詢問題
+     */
     override fun getStoriesByCategory(category: StoryCategory): Flow<List<Story>> {
-        return storyDao.getStoriesByCategory(category.name).map { entities ->
-            entities.map { entity ->
-                val segments = storySegmentDao.getSegmentsByStoryId(entity.id)
-                entity.toDomain(segments)
-            }
+        return storyDao.getStoriesByCategoryWithSegments(category.name).map { storiesWithSegments ->
+            storiesWithSegments.map { it.toDomain() }
         }
     }
 
+    /**
+     * 獲取預設故事
+     * 優化：使用 @Transaction 和 @Relation 避免 N+1 查詢問題
+     */
     override fun getPresetStories(): Flow<List<Story>> {
-        return storyDao.getPresetStories().map { entities ->
-            entities.map { entity ->
-                val segments = storySegmentDao.getSegmentsByStoryId(entity.id)
-                entity.toDomain(segments)
-            }
+        return storyDao.getPresetStoriesWithSegments().map { storiesWithSegments ->
+            storiesWithSegments.map { it.toDomain() }
         }
     }
 
+    /**
+     * 獲取 AI 生成的故事
+     * 優化：使用 @Transaction 和 @Relation 避免 N+1 查詢問題
+     */
     override fun getAIGeneratedStories(): Flow<List<Story>> {
-        return storyDao.getAIGeneratedStories().map { entities ->
-            entities.map { entity ->
-                val segments = storySegmentDao.getSegmentsByStoryId(entity.id)
-                entity.toDomain(segments)
-            }
+        return storyDao.getAIGeneratedStoriesWithSegments().map { storiesWithSegments ->
+            storiesWithSegments.map { it.toDomain() }
         }
     }
 
