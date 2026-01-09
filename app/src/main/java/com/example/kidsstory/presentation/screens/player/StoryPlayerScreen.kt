@@ -30,8 +30,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.SkipNext
+import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -83,7 +86,6 @@ fun StoryPlayerScreen(
     var showSettings by remember { mutableStateOf(false) }
     var showSegments by remember { mutableStateOf(false) }
     val isEnglish = uiState.language == Language.ENGLISH
-    val context = LocalContext.current
 
     LaunchedEffect(storyId) {
         viewModel.loadStory(storyId)
@@ -247,18 +249,45 @@ fun StoryPlayerScreen(
                                 .padding(bottom = 16.dp)
                         ) {
                             if (uiState.segmentCount > 0) {
-                                LinearProgressIndicator(
-                                    progress = {
-                                        ((uiState.currentSegmentIndex + 1).toFloat() /
-                                                uiState.segmentCount.toFloat()).coerceIn(0f, 1f)
-                                    },
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(4.dp)
-                                        .clip(RoundedCornerShape(2.dp)),
-                                    color = Color.White.copy(alpha = 0.8f),
-                                    trackColor = Color.White.copy(alpha = 0.3f)
-                                )
+                                Column(modifier = Modifier.fillMaxWidth()) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(
+                                            text = if (isEnglish) {
+                                                "Segment ${uiState.currentSegmentIndex + 1}"
+                                            } else {
+                                                "第 ${uiState.currentSegmentIndex + 1} 段"
+                                            },
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = Color.White.copy(alpha = 0.9f)
+                                        )
+                                        Text(
+                                            text = "${uiState.currentSegmentIndex + 1} / ${uiState.segmentCount}",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = Color.White.copy(alpha = 0.9f)
+                                        )
+                                    }
+
+                                    Slider(
+                                        value = uiState.currentSegmentIndex.toFloat(),
+                                        onValueChange = { newValue ->
+                                            viewModel.seekToSegment(newValue.toInt())
+                                        },
+                                        valueRange = 0f..(max(0, uiState.segmentCount - 1).toFloat()),
+                                        steps = max(0, uiState.segmentCount - 2),
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(20.dp),
+                                        colors = androidx.compose.material3.SliderDefaults.colors(
+                                            thumbColor = Color.White,
+                                            activeTrackColor = Color.White.copy(alpha = 0.8f),
+                                            inactiveTrackColor = Color.White.copy(alpha = 0.3f)
+                                        )
+                                    )
+                                }
                                 Spacer(modifier = Modifier.height(8.dp))
                             }
 
@@ -294,15 +323,46 @@ fun StoryPlayerScreen(
                                         horizontalArrangement = Arrangement.Center,
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
+                                        // 上一段按鈕
                                         PlaybackButton(
-                                            icon = Icons.Default.PlayArrow,
+                                            icon = Icons.Default.SkipPrevious,
+                                            contentDescription = if (isEnglish) "Previous" else "上一段",
+                                            onClick = { viewModel.previousSegment() },
+                                            size = 56.dp,
+                                            iconSize = 32.dp,
+                                            enabled = uiState.currentSegmentIndex > 0
+                                        )
+
+                                        Spacer(modifier = Modifier.width(16.dp))
+
+                                        // 播放/暫停按鈕
+                                        PlaybackButton(
+                                            icon = if (uiState.isPlaying) {
+                                                Icons.Default.Pause
+                                            } else {
+                                                Icons.Default.PlayArrow
+                                            },
                                             contentDescription = if (uiState.isPlaying) {
                                                 if (isEnglish) "Pause" else "暫停"
                                             } else {
                                                 if (isEnglish) "Play" else "播放"
                                             },
                                             onClick = { viewModel.togglePlayPause() },
-                                            isPlaying = uiState.isPlaying
+                                            size = 64.dp,
+                                            iconSize = 36.dp,
+                                            enabled = true
+                                        )
+
+                                        Spacer(modifier = Modifier.width(16.dp))
+
+                                        // 下一段按鈕
+                                        PlaybackButton(
+                                            icon = Icons.Default.SkipNext,
+                                            contentDescription = if (isEnglish) "Next" else "下一段",
+                                            onClick = { viewModel.nextSegment() },
+                                            size = 56.dp,
+                                            iconSize = 32.dp,
+                                            enabled = uiState.currentSegmentIndex < uiState.segmentCount - 1
                                         )
                                     }
                                 }
@@ -466,21 +526,31 @@ fun PlaybackButton(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     contentDescription: String,
     onClick: () -> Unit,
-    isPlaying: Boolean
+    size: androidx.compose.ui.unit.Dp = 64.dp,
+    iconSize: androidx.compose.ui.unit.Dp = 36.dp,
+    enabled: Boolean = true
 ) {
     Surface(
         modifier = Modifier
-            .size(64.dp)
-            .clickable(onClick = onClick),
+            .size(size)
+            .clickable(enabled = enabled, onClick = onClick),
         shape = CircleShape,
-        color = MaterialTheme.colorScheme.primary
+        color = if (enabled) {
+            MaterialTheme.colorScheme.primary
+        } else {
+            MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
+        }
     ) {
         Box(contentAlignment = Alignment.Center) {
             Icon(
                 imageVector = icon,
                 contentDescription = contentDescription,
-                modifier = Modifier.size(36.dp),
-                tint = MaterialTheme.colorScheme.onPrimary
+                modifier = Modifier.size(iconSize),
+                tint = if (enabled) {
+                    MaterialTheme.colorScheme.onPrimary
+                } else {
+                    MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.5f)
+                }
             )
         }
     }
