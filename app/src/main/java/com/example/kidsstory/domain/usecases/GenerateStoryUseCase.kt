@@ -14,6 +14,10 @@ class GenerateStoryUseCase @Inject constructor(
     private val imageGenerator: ImageGenerationService,
     private val repository: StoryRepository
 ) {
+    companion object {
+        private const val TAG = "GenerateStoryUseCase"
+    }
+
     /**
      * @param theme 主題（例如：冒險、友誼、家庭）
      * @param protagonist 主角（例如：小兔子、小熊、小女孩）
@@ -54,7 +58,7 @@ class GenerateStoryUseCase @Inject constructor(
                         story
                     }
                 } catch (e: Exception) {
-                    e.printStackTrace()
+                    android.util.Log.e(TAG, "Cover image generation failed", e)
                     // 圖片生成失敗不影響故事生成
                     story
                 }

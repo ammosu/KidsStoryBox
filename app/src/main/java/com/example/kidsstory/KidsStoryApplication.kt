@@ -29,7 +29,7 @@ class KidsStoryApplication : Application() {
             try {
                 storyRepository.initializePresetStories()
             } catch (e: Exception) {
-                e.printStackTrace()
+                android.util.Log.e("KidsStoryApplication", "Failed to initialize preset stories", e)
             }
         }
     }

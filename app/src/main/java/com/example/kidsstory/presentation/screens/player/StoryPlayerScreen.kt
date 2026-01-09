@@ -1,6 +1,7 @@
 package com.example.kidsstory.presentation.screens.player
 
-import android.graphics.BitmapFactory
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -62,7 +63,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -158,27 +158,28 @@ fun StoryPlayerScreen(
                         transitionSpec = { fadeIn() togetherWith fadeOut() },
                         label = "segment_image"
                     ) { imagePath ->
+                        val context = LocalContext.current
                         if (imagePath != null) {
-                            val bitmap = remember(imagePath) {
-                                try {
-                                    val file = File(imagePath)
-                                    if (file.exists()) {
-                                        BitmapFactory.decodeFile(file.absolutePath)?.asImageBitmap()
-                                    } else null
-                                } catch (e: Exception) {
-                                    null
-                                }
-                            }
-                            if (bitmap != null) {
-                                Image(
-                                    bitmap = bitmap,
-                                    contentDescription = null,
+                            Box(modifier = Modifier.fillMaxSize()) {
+                                // 背景漸層作為後備
+                                GradientBackground()
+                                // 圖片覆蓋在上層
+                                AsyncImage(
+                                    model = ImageRequest.Builder(context)
+                                        .data(File(imagePath))
+                                        .crossfade(true)
+                                        .build(),
+                                    contentDescription = if (isEnglish) {
+                                        "Story illustration"
+                                    } else {
+                                        "故事插圖"
+                                    },
                                     modifier = Modifier.fillMaxSize(),
                                     contentScale = ContentScale.Crop
                                 )
-                            } else {
-                                GradientBackground()
                             }
+                        } else {
+                            GradientBackground()
                         }
                     }
 

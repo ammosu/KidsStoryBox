@@ -22,6 +22,9 @@ import javax.inject.Singleton
  */
 @Singleton
 class GeminiStoryGenerator @Inject constructor() {
+    companion object {
+        private const val TAG = "GeminiStoryGenerator"
+    }
 
     private val model: GenerativeModel by lazy {
         GenerativeModel(
@@ -62,7 +65,7 @@ class GeminiStoryGenerator @Inject constructor() {
 
             parseStoryFromResponse(text, theme, language)
         } catch (e: Exception) {
-            e.printStackTrace()
+            android.util.Log.e(TAG, "Failed to generate or parse story", e)
             null
         }
     }
@@ -217,7 +220,7 @@ Please output only JSON, no other text.
                 createdAt = System.currentTimeMillis()
             )
         } catch (e: Exception) {
-            e.printStackTrace()
+            android.util.Log.e(TAG, "Failed to generate or parse story", e)
             return null
         }
     }

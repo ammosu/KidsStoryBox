@@ -1,7 +1,8 @@
 package com.example.kidsstory.presentation.screens.library
 
-import android.graphics.BitmapFactory
 import androidx.compose.foundation.Image
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import java.io.File
@@ -358,9 +359,6 @@ fun StoryCard(
         )
     )
 
-    val coverImageBitmap = loadAssetImage(story.coverImage)
-    val hasValidCoverImage = coverImageBitmap != null
-
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -378,15 +376,18 @@ fun StoryCard(
                     .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)),
                 contentAlignment = Alignment.Center
             ) {
-                // 如果有封面圖片，顯示圖片；否則顯示漸變背景
-                if (hasValidCoverImage && coverImageBitmap != null) {
-                    Image(
-                        bitmap = coverImageBitmap,
+                // 使用 Coil AsyncImage 優化圖片加載
+                Box(modifier = Modifier.fillMaxSize()) {
+                    AsyncImage(
+                        model = ImageRequest.Builder(context)
+                            .data(File(story.coverImage))
+                            .crossfade(true)
+                            .build(),
                         contentDescription = title,
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop
                     )
-                } else {
+                    // 背景漸層作為加載失敗的後備
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
@@ -466,23 +467,3 @@ fun StoryMetaPill(text: String) {
     }
 }
 
-@Composable
-private fun loadAssetImage(assetPath: String): ImageBitmap? {
-    val context = LocalContext.current
-    return remember(assetPath) {
-        var result: ImageBitmap? = null
-        try {
-            val file = if (assetPath.startsWith("/")) {
-                File(assetPath)
-            } else {
-                File(context.filesDir, assetPath)
-            }
-            if (file.exists()) {
-                result = BitmapFactory.decodeFile(file.absolutePath)?.asImageBitmap()
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-        result
-    }
-}

@@ -27,6 +27,10 @@ import javax.inject.Singleton
 class ImageGenerationService @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
+    companion object {
+        private const val TAG = "ImageGenerationService"
+    }
+
     private val client = OkHttpClient.Builder()
         .connectTimeout(60, TimeUnit.SECONDS)
         .readTimeout(120, TimeUnit.SECONDS)
@@ -61,7 +65,7 @@ class ImageGenerationService @Inject constructor(
                 null
             }
         } catch (e: Exception) {
-            e.printStackTrace()
+            android.util.Log.e(TAG, "Image generation failed", e)
             null
         }
     }
@@ -88,7 +92,7 @@ class ImageGenerationService @Inject constructor(
                 null
             }
         } catch (e: Exception) {
-            e.printStackTrace()
+            android.util.Log.e(TAG, "Image generation failed", e)
             null
         }
     }
@@ -190,7 +194,7 @@ class ImageGenerationService @Inject constructor(
 
             null
         } catch (e: Exception) {
-            e.printStackTrace()
+            android.util.Log.e(TAG, "Image generation failed", e)
             null
         }
     }
@@ -213,7 +217,7 @@ class ImageGenerationService @Inject constructor(
                 null
             }
         } catch (e: Exception) {
-            e.printStackTrace()
+            android.util.Log.e(TAG, "Image generation failed", e)
             null
         }
     }
@@ -241,7 +245,7 @@ class ImageGenerationService @Inject constructor(
 
             imageFile.absolutePath
         } catch (e: Exception) {
-            e.printStackTrace()
+            android.util.Log.e(TAG, "Image generation failed", e)
             null
         }
     }

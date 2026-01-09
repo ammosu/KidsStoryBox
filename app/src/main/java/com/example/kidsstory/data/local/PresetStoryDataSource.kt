@@ -21,6 +21,9 @@ class PresetStoryDataSource @Inject constructor(
     private val gson: Gson,
     private val imageGenerationService: ImageGenerationService
 ) {
+    companion object {
+        private const val TAG = "PresetStoryDataSource"
+    }
 
     /**
      * 讀取所有預設故事
@@ -47,12 +50,12 @@ class PresetStoryDataSource @Inject constructor(
 
                         stories.add(story)
                     } catch (e: Exception) {
-                        e.printStackTrace()
+                        android.util.Log.e(TAG, "Failed to load story file", e)
                     }
                 }
             }
         } catch (e: Exception) {
-            e.printStackTrace()
+            android.util.Log.e(TAG, "Failed to load resources", e)
         }
 
         return stories
@@ -89,12 +92,12 @@ class PresetStoryDataSource @Inject constructor(
 
                         stories.add(story)
                     } catch (e: Exception) {
-                        e.printStackTrace()
+                        android.util.Log.e(TAG, "Failed to load story file", e)
                     }
                 }
             }
         } catch (e: Exception) {
-            e.printStackTrace()
+            android.util.Log.e(TAG, "Failed to load resources", e)
         }
 
         return stories
@@ -133,7 +136,7 @@ class PresetStoryDataSource @Inject constructor(
 
             targetFile.absolutePath
         } catch (e: Exception) {
-            e.printStackTrace()
+            android.util.Log.e(TAG, "Failed to load resources", e)
             null
         }
     }
@@ -171,7 +174,7 @@ class PresetStoryDataSource @Inject constructor(
 
             targetFile.absolutePath
         } catch (e: Exception) {
-            e.printStackTrace()
+            android.util.Log.e(TAG, "Failed to load resources", e)
             null
         }
     }
@@ -187,7 +190,7 @@ class PresetStoryDataSource @Inject constructor(
 
             gson.fromJson(jsonString, StoryJson::class.java)
         } catch (e: Exception) {
-            e.printStackTrace()
+            android.util.Log.e(TAG, "Failed to load resources", e)
             null
         }
     }
